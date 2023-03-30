@@ -14,17 +14,20 @@ import de.orat.math.cga.api.CGARoundPointOPNS;
 import de.orat.math.cga.api.CGASphereIPNS;
 import de.orat.math.cga.api.CGASphereOPNS;
 import de.orat.math.cga.api.iCGAFlat;
-import de.orat.math.cga.api.iCGAPointPair.PointPair;
+import de.orat.math.cga.api.iCGAPointPair;
 import de.orat.math.cga.api.iCGATangentOrRound;
+import de.orat.math.cga.api.iCGATangentOrRound.EuclideanParameters;
 import de.orat.math.view.euclidview3d.GeometryView3d;
+import de.orat.math.view.euclidview3d.ObjectLoader;
+import java.util.ArrayList;
+import javax.swing.SwingUtilities;
 import org.jogamp.vecmath.Point3d;
 import org.jogamp.vecmath.Vector3d;
 import org.jzy3d.analysis.AnalysisLauncher;
 import org.jzy3d.chart.Chart;
 import org.jzy3d.colors.Color;
+import org.jzy3d.plot3d.primitives.EuclidRobot;
 import org.jzy3d.plot3d.rendering.canvas.Quality;
-import org.jzy3d.plot3d.rendering.lights.Light;
-import org.jzy3d.plot3d.rendering.scene.Graph;
 
 /**
  *
@@ -33,46 +36,237 @@ import org.jzy3d.plot3d.rendering.scene.Graph;
  * - Visualisierung-Volumen an Punkten, Kugeln, Kreisen orientieren und start-endpunkte
  *   von Linien sowie betreffende Parameter von Ebenen entsprechend automatisch anpassen
  * 
- * Default Farben:
- * spheres and planes (points) grade 1 yellow
- * dual spheres and planes (grade 4) red
- * dual lines and dual circle and point pairs (grade 3) objekte blau
- * circle, lines and dual point pairs (grade 2) color?
- * imaginäre kreise,point-pairs, sphere: dashed
+ * TODO
+ * imaginäre circles, point-pairs, spheres: dashed
  * 
  * @author Oliver Rettig (Oliver.Rettig@orat.de)
  */
 public class GeometryViewCGA extends GeometryView3d {
     
-    public static Color COLOR_GRADE_1 = Color.RED;    // ipns sphere, ipns planes, ipns round points
-    public static Color COLOR_GRADE_2 = Color.GREEN;  // ipns lines, ipns circle
-    public static Color COLOR_GRADE_3 = Color.BLUE;   // ipns point-pairs, ipns tangent vector, ipns flat-point 
-    public static Color COLOR_GRADE_4 = Color.YELLOW; // 
+    public static Color COLOR_GRADE_1 = Color.RED;    // ipns: sphere, planes, round points
+    public static Color COLOR_GRADE_2 = Color.GREEN;  // ipns: lines, ipns circle, oriented points; opns: flat-points, point-pairs
+    public static Color COLOR_GRADE_3 = Color.BLUE;   // ipns: point-pairs, (tangent vector), flat-points; opns:circle, line, oriented-points
+    public static Color COLOR_GRADE_4 = Color.YELLOW; // (ipns euclidean vector), opns: plane, round-point, spheres
     
     //TODO
     // nur als Faktoren verwenden und skalieren auf Basis des angezeigten Volumens
-    public static float POINT_RADIUS = 0.02f;
-    public static float LINE_RADIUS = 0.02f;
+    public static float POINT_RADIUS = 0.040f; // in m
+    public static float LINE_RADIUS = 0.01f; // in m
     public static float TANGENT_LENGTH = 0.1f;
    
-    
     public static void main(String[] args) throws Exception {
         GeometryViewCGA gv = new GeometryViewCGA();
         AnalysisLauncher.open(gv);
         
-        gv.updateChessFloor(true);
+        //Robots have to be rotated after initialisation.
+        rotateRobotsCoordsystem();
+        setRobotsDH();
+        //gv.setUpRobotMovementUIWithSliders();
         
-        //GeometryView3d viewer = new GeometryView3d();
-        //viewer.open();
+        //gv.updateChessFloor(true, CHESS_FLOOR_WIDTH);
+       
+        // gv.setUpSkeletons(); 
+        EuclidRobot robot = robotList.get(0); // letzter Eintrag aus der Tabelle 
+        robot.setTheta(1, -42.29444839527154F,true); 
+        robot.setTheta(2, -83.92752302017205F,true); 
+        robot.setTheta(3, -95.53404922699703F,true); 
+        robot.setTheta(4, -90.56670900909727F,true); 
+        robot.setTheta(5, 90.21354316792402F,true); 
+        robot.setTheta(6, -132.37747769068068F,true);
+        
     }
+    
+    private void addGeometricObjects(/*GeometryViewCGA gv*/){
+        
+        // test points visualisation
+        //Point3d center = new Point3d(1,2,3);
+        //CGARoundPointIPNS p = new CGARoundPointIPNS(center);
+        //gv.addCGAObject(p, "p");
+        
+        // TCP
+        // point in ipns representation, gaalop ordered values, Punkt Endeffektor
+        double[] values = new double[]{0, 0.24011911, -0.39999987, -0.49, 0.22887854, 1,
+                                       0,0,0,0,0,0,
+                                       0,0,0,0,0,0,
+                                       0,0,0,0,0,0,
+                                       0,0,0,0,0,0,
+                                       0,0};
+        CGARoundPointIPNS tcp = new CGARoundPointIPNS(CGAMultivector.fromGaalop(values));
+        System.out.println(tcp.toString("tcp"));
+        addCGAObject(tcp, "tcp");
+        
+        // Punkt P5 (letztes Gelenk)
+        values = new double[]{
+                    0,          0.24011911, -0.39999987, -0.3904,      0.18503462,  1,
+                    0,          0,          0,          0,          0,          0,
+                    0,          0,          0,          0,          0,          0,
+                    0,          0,          0,          0,          0,          0,
+                    0,          0,          0,          0,          0,          0,
+                    0,          0    
+        };
+        CGARoundPointIPNS p5 = new CGARoundPointIPNS(CGAMultivector.fromGaalop(values));
+        System.out.println(p5.toString("p5"));
+        addCGAObject(p5, "p5");
+        
+        // spheres 
+        
+        // test sphere um P5 visualisation
+        values = new double[]{0, 0.24011911, -0.39999987, -0.3904, 0.17615018,  1,
+                                0,         0,         0,         0,         0,         0,
+                                0,         0,         0,         0,         0,         0,
+                                0,         0,         0,         0,         0,         0,
+                                0,         0,         0 ,        0,         0,         0,
+                                0,         0,       };
+        CGASphereIPNS sp5 = new CGASphereIPNS(CGAMultivector.fromGaalop(values));
+        System.out.println(sp5.toString("sp5"));
+        //addCGAObject(sp5, "sp5");
+        
+        
+        // Kugel um den Ursprung
+        /*values = new double[]{0, 0, 0, 0, -0.17615018,  1,
+                                0,         0,         0,         0,         0,         0,
+                                0,         0,         0,         0,         0,         0,
+                                0,         0,         0,         0,         0,         0,
+                                0,         0,         0 ,        0,         0,         0,
+                                0,         0,       };
+        CGASphereIPNS so = new CGASphereIPNS(CGAMultivector.fromGaalop(values));
+        System.out.println(so.toString("so"));
+        addCGAObject(so, "so");
+        */
+        
+        // circle visualisation ok
+        values = new double[]{0,          0,         0,       0,         0,         0,
+                    0,          0,         -0.04229702,  0.24011911,  0, 0.07046005,
+                   -0.39999987,  0.06876903, -0.3904,     0.35230035,  0,          0,
+                    0,          0,          0,          0,          0,          0,
+                    0,          0,          0,          0,          0,          0,
+                    0,          0       };
+        CGACircleIPNS c = new CGACircleIPNS(CGAMultivector.fromGaalop(values));
+        System.out.println(c.toString("c"));
+        addCGAObject(c, "c");
+        
+        // testweise circle parameter ausgeben
+        EuclideanParameters parameters = c.decompose();
+        System.out.println("radius*radius= "+String.valueOf(parameters.squaredSize()));
+        System.out.println("radius= "+String.valueOf(Math.sqrt(Math.abs(parameters.squaredSize()))));
+        Vector3d n = parameters.attitude();
+        System.out.println("normal= "+String.valueOf(n.x)+", "+String.valueOf(n.y)+", "+String.valueOf(n.z));
+        Point3d loc = parameters.location();
+        System.out.println("location= "+String.valueOf(loc.x)+", "+String.valueOf(loc.y)+", "+String.valueOf(loc.z));
+        
+        
+        // circle ok
+        Vector3d normal = new Vector3d(0,0,1);
+        float radius = 2;
+        CGACircleIPNS cc = new CGACircleIPNS(loc, normal, radius);
+        addCGAObject(cc,"cc");
+        //addCircle(loc, normal, radius, Color.BLUE, "test circle", false);
+        
+        // point-pair funktioniert
+        Point3d pp1 = new Point3d(0.3,2,1);
+        Point3d pp2 = new Point3d(0.3,2,0.5);
+        CGAPointPairIPNS pp = (new CGAPointPairOPNS(pp1,pp2)).dual();
+        //addPointPair(pp.decomposePoints(), "pp", true, false);
+        
+        // test line
+        Point3d start = new Point3d(0.3,-0.3,-0.3);
+        Vector3d v = new Vector3d(1,1,1);
+        CGALineIPNS line = new CGALineIPNS(start, v);
+        boolean result = addCGAObject(line,"line");
+        if (!result){
+            System.out.println("Add line \"line+\" failed!");
+        }
+        
+        //FIXME decompose schlägt fehl
+        // unklar, ob das überhaupt ein Punktepaar beschreibt
+        /*
+         * [ 0.          0.          0.          0.          0.          0.
+            0.          0.          0.          0.          0.          0.
+            0.          0.          0.          0.          0.          0.
+            0.         -0.04229702  0.24011911 -0.0937425   0.07046005 -0.39999987
+            0.15615995 -0.19988819  0.          0.          0.          0.
+            0.          0.        ]
+         */
+        values = new double[]{  0,          0,          0,          0,          0,          0,
+                                0,          0,          0,          0,          0,          0,
+                                0,          0,          0,          0,          0,          0,
+                                0,         -0.04229702,  0.24011911, -0.0937425,   0.07046005, -0.39999987,
+                                0.15615995, -0.19988819,  0,          0,          0,          0,
+                                0,          0        };
+        CGAPointPairIPNS PP = new CGAPointPairIPNS(CGAMultivector.fromGaalop(values));
+        System.out.println(PP.toString("PP"));
+        // PP = (0.24011911*eo^e1^e3 + 0.39999987*eo^e2^e3 - 0.0937425*eo^e1^ei + 0.15615995*eo^e2^ei - 0.19988819*eo^e3^ei - 0.04229702*e1^e3^ei + 0.07046005*e2^e3^ei)
+        // das ist also ein korrekter ipns point-pair
+        // The given multivector is no k-vector: 1.0000000000000002*eo + NaN*e1 + NaN*e2 + 0.18356670723359603*e3 - 0.3445510478954948*e1^e2^e3 - 0.082826103312249*ei + 0.15546292605571413*e1^e2^ei
+        // weightIntern2 (squaredSizeIntern2, CGAOrientedPointPairIPNS)=0.4665373328976028
+        // locationIntern2 (CGAOrientedPointPairIPNS) = (0.22051648227377704*e1 + 0.3673450407273629*e2 + 0.18356670723359603*e3 + 0.3445510478954946*e1^e2^e3)
+        // The given multivector is not not grade 1 or 0! grade()=-1 0.22051648227377704*e1 + 0.3673450407273629*e2 + 0.18356670723359603*e3 + 0.3445510478954946*e1^e2^e3
+        // double r2 = PP.squaredSizeIntern5().value();
+        //System.out.println("squaredSize(PP)="+String.valueOf(r2));
+        double r2 = PP.squaredSizeIntern3().value(); // <0 funktioniert
+        System.out.println("squaredSize(PP)3="+String.valueOf(r2));
+        //r2 = PP.squaredSizeIntern2().value(); // schlägt fehl
+        //System.out.println("squaredSize(PP)2="+String.valueOf(r2));
+        r2 = PP.squaredSizeIntern1().value();
+        System.out.println("squaredSize(PP)1="+String.valueOf(r2));
+        r2 = PP.squaredSize();
+        System.out.println("squaredSize(PP)="+String.valueOf(r2));
+        addCGAObject(PP, "PP");
+       
+        // Punkt P_c:
+        values = new double[]{ 0.00000000e+00, -3.30040856e-01,  3.01597789e-01,  3.90400000e-01,
+            -1.76150176e-01, -1.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+             0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+             0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+             0.00000000e+00,  2.77555756e-17,  0.00000000e+00,  0.00000000e+00,
+             0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+             0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+             0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  0.00000000e+00};
+        CGARoundPointIPNS P_c = new CGARoundPointIPNS(CGAMultivector.fromGaalop(values));
+        System.out.println(P_c.toString("P_c"));
+        addCGAObject(P_c, "P_c");
+        
+        // plane
+        
+        //Ebene PI_c:
+        /*values = new double[]{0,         -0.30159779, -0.33004086,  0,          0,          0,
+                                0,          0,          0,          0,          0,          0,
+                                0,          0,          0,          0,          0,          0,
+                                0,          0,          0,          0,          0,          0,
+                                0,          0,          0,          0,          0,          0,
+                                0,          0 };  
+        CGAPlaneIPNS PI_c = new CGAPlaneIPNS(CGAMultivector.fromGaalop(values));
+        System.out.println(PI_c.toString("PI_c"));
+        addCGAObject(PI_c, "PI_c");*/
+        
+        // test Ebene selbst erzeugt
+        // yz-Ebene
+        CGAPlaneIPNS pl = new CGAPlaneIPNS(new Vector3d(1,0,0),0d);
+        System.out.println(pl.toString("pl"));
+        addCGAObject(pl, "pl");
+        
+        // funktioniert
+        //boolean res = addPlane(new Point3d(0,0,0), new Vector3d(0,0,500), new Vector3d(0,500,500),
+        //                  Color.BLUE, "plane");
+       }
+    
     /**
      * Add cga object into the visualization. 
      * 
-     * @param values
-     * @param isIPNS
-     * @param label 
+     * @param values tuple of 32 values representing the multivector
+     * @param fromGaalop set to true, if the values are in order of usage in Gaalop
+     * @param isIPNS set to true, if an CGA object should be created in inner product null space representation
+     * @param label label of the cga object shown in the visualisation
      */
-    public void addCGAObject(double[] values, boolean isIPNS, String label){
+    public void addCGAObject(double[] values, boolean fromGaalop, boolean isIPNS, String label){
+        if (values.length != 32) throw new IllegalArgumentException("The given double[] is not of length 32 but \""+
+                String.valueOf(values.length)+"\"!");
+        double[] useValues = values;
+        if (fromGaalop){
+            useValues = CGAMultivector.fromGaalop(values);
+        }
+        //TODO
+        // CGAMultivector.create() is incomplete
         addCGAObject(CGAMultivector.create(values, isIPNS), label);
     }
     
@@ -81,23 +275,49 @@ public class GeometryViewCGA extends GeometryView3d {
      * 
      * @param m cga multivector
      * @param label label
+     * @return 
      * @throws IllegalArgumentException if multivector is no visualizable type
      */
-    public void addCGAObject(CGAMultivector m, String label){
+    public boolean addCGAObject(CGAMultivector m, String label){
         
         // cga ipns objects
         if (m instanceof CGARoundPointIPNS){
             addPoint(m.decomposeTangentOrRound(), label, true);
+            return true;
         } else if (m instanceof CGALineIPNS){
-            addLine(m.decomposeFlat(), label, true);
+            return addLine(m.decomposeFlat(), label, true);
         } else if (m instanceof CGAPointPairIPNS){
-            addPointPair(m.decomposeTangentOrRound(), label, true);
+            //addPointPair(m.decomposeTangentOrRound(), label, true);
+            // WORKAROUND, obige Methode solle funktioniere. Der Workaround funktioniert aber auch nicht
+            //FIXME unklar ob normalize wirklich nötig ist
+            CGAPointPairIPNS mn = ((CGAPointPairIPNS) m).normalize();
+            
+            double r2 = mn.squaredSize();
+            if (r2 < 0){
+                //FIXME
+                // decomposition schlägt fehl
+                // show imaginary point pairs as circles
+                //addCircle(mn.decomposeTangentOrRound(), label, true);
+                //return true;
+                return false;
+            // tangent vector
+            } else if (r2 == 0){
+                System.out.println("CGA-Object \""+label+"\" is a tangent vector - not yet supported!");
+                return false;
+                
+            // real point pair
+            } else {
+                addPointPair(((CGAPointPairIPNS) m).decomposePoints(), label, true);
+                return true;
+            }
         } else if (m instanceof CGASphereIPNS){
             addSphere(m.decomposeTangentOrRound(), label, true);
+            return true;
         } else if (m instanceof CGAPlaneIPNS){
-            addPlane(m.decomposeFlat(), label, true);
+            return addPlane(m.decomposeFlat(), label, true);
         } else if (m instanceof CGACircleIPNS){
             addCircle(m.decomposeTangentOrRound(), label, true);
+            return true;
         }
         //TODO
         // oriented-point
@@ -106,16 +326,22 @@ public class GeometryViewCGA extends GeometryView3d {
         // cga opns objects
         if (m instanceof CGARoundPointOPNS){
             addPoint(m.decomposeTangentOrRound(), label, false);
+            return true;
         } else if (m instanceof CGALineOPNS){
             addLine(m.decomposeFlat(), label, false);
+            return true;
         } else if (m instanceof CGAPointPairOPNS){
             addPointPair(m.decomposeTangentOrRound(), label, false);
+            return true;
         } else if (m instanceof CGASphereOPNS){
             addSphere(m.decomposeTangentOrRound(), label, false);
+            return true;
         } else if (m instanceof CGAPlaneOPNS){
             addPlane(m.decomposeFlat(), label, false);
+            return true;
         } else if (m instanceof CGACircleOPNS){
             addCircle(m.decomposeTangentOrRound(), label, false);
+            return true;
         }
         
         //TODO
@@ -131,19 +357,23 @@ public class GeometryViewCGA extends GeometryView3d {
     /**
      * Add a point to the 3d view.
      * 
-     * @param parameters
+     * @param parameters unit is [m]
      * @param isIPNS 
      * @param label
      */
     public void addPoint(iCGATangentOrRound.EuclideanParameters parameters, String label, boolean isIPNS){
         Color color = COLOR_GRADE_1;
         if (!isIPNS) color = COLOR_GRADE_4;
-        addPoint(parameters.location(), color, POINT_RADIUS*2, label); 
+        Point3d location = parameters.location();
+        System.out.println("Add point \""+label+"\" at ("+String.valueOf(location.x)+","+
+                String.valueOf(location.y)+", "+String.valueOf(location.z)+")!");
+        location.scale(1000d);
+        addPoint(location, color, POINT_RADIUS*2*1000, label); 
     }
     /**
      * Add a sphere to the 3d view.
      * 
-     * @param parameters
+     * @param parameters unit is [m]
      * @param label
      * @param isIPNS 
      */
@@ -151,20 +381,38 @@ public class GeometryViewCGA extends GeometryView3d {
                           String label, boolean isIPNS){
         Color color = COLOR_GRADE_1;
         if (!isIPNS) color = COLOR_GRADE_4;
-        addSphere(parameters.location(), parameters.squaredSize(), color, label);
+        Point3d location = parameters.location();
+        location.scale(1000d);
+        boolean imaginary = false;
+        if (parameters.squaredSize() < 0){
+            imaginary = true;
+        }
+        //TODO
+        // Farbe ändern für imaginäre Kugeln
+        double radius = Math.sqrt(Math.abs(parameters.squaredSize()));
+        radius *= 1000;
+        System.out.println("Add sphere \""+label+"\" at ("+String.valueOf(location.x)+"mm,"+
+                String.valueOf(location.y)+"mm, "+String.valueOf(location.z)+"mm) with radius "+
+                String.valueOf(radius)+"mm!");
+        
+        addSphere(location, radius, color, label);
     }
     /**
      * Add a plane to the 3d view.
      * 
-     * @param parameters
+     * @param parameters unit is [m]
      * @param label
      * @param isIPNS 
+     * @return true, if the plane is visible in the current bounding box
      */
-    public void addPlane(iCGAFlat.EuclideanParameters parameters, String label, boolean isIPNS){
+    public boolean addPlane(iCGAFlat.EuclideanParameters parameters, String label, 
+                         boolean isIPNS){
         Color color = COLOR_GRADE_1;
         if (!isIPNS) color = COLOR_GRADE_4;
-        addPlane(parameters.location(), parameters.attitude(), color, label);
-    };
+        Point3d location = parameters.location();
+        location.scale(1000d);
+        return addPlane(location, parameters.attitude(), color, label);
+    }
     
     
     // grade 2
@@ -172,21 +420,22 @@ public class GeometryViewCGA extends GeometryView3d {
     /**
      * Add a line to the 3d view.
      * 
-     * @param parameters
+     * @param parameters, unit is [m]
      * @param isIPNS
      * @param label 
+     * @return  
      */
-    public void addLine(iCGAFlat.EuclideanParameters parameters, String label, boolean isIPNS){
+    public boolean addLine(iCGAFlat.EuclideanParameters parameters, String label, boolean isIPNS){
         Color color = COLOR_GRADE_2;
         if (!isIPNS) color = COLOR_GRADE_3;
-        float length = 1;
-        addLine(parameters.location(), parameters.attitude(), color, 
-                LINE_RADIUS, length, label); 
+        Point3d location = parameters.location();
+        location.scale(1000d);
+        return addLine(location, parameters.attitude(), color, LINE_RADIUS*1000,  label); 
     }
     /**
      * Add a circle to the 3d view.
      * 
-     * @param parameters
+     * @param parameters unit in [m]
      * @param label
      * @param isIPNS 
      */
@@ -195,9 +444,22 @@ public class GeometryViewCGA extends GeometryView3d {
         Color color = COLOR_GRADE_2;
         if (!isIPNS) color = COLOR_GRADE_3;
         boolean isImaginary = false;
-        if (parameters.squaredSize() <0) isImaginary = true;
-        addCircle(parameters.location(), parameters.attitude(), 
-                (float) parameters.squaredSize(), color, label, isImaginary);
+        double r2 = parameters.squaredSize();
+        if (r2 <0) {
+            isImaginary = true;
+            r2 = -r2;
+        }
+        r2*=1000000d;
+        Point3d location = parameters.location();
+        location.scale(1000d);
+        Vector3d direction = parameters.attitude();
+        System.out.println("Add circle \""+label+"\" at ("+String.valueOf(location.x)+"mm,"+
+                String.valueOf(location.y)+"mm, "+String.valueOf(location.z)+"mm) with radius "+
+                String.valueOf(Math.sqrt(r2)+
+                "\"[mm] and n= ("+String.valueOf(direction.x)+","+
+                String.valueOf(direction.y)+", "+String.valueOf(direction.z)+")!"));
+        addCircle(location, direction, 
+                (float) Math.sqrt(r2), color, label, isImaginary);
     }
     
     
@@ -206,22 +468,40 @@ public class GeometryViewCGA extends GeometryView3d {
     /**
      * Add a point-pair to the 3d view.
      * 
-     * @param parameters
+     * No imaginary point-pairs, because these are ipns circles.
+     * 
+     * @param pp unit in [m]
      * @param label
-     * @param isIPNS 
+     * @param isIPNS true, if ipns representation
+     */
+    public void addPointPair(iCGAPointPair.PointPair pp, String label, boolean isIPNS){
+        Color color = COLOR_GRADE_3;
+        if (!isIPNS) color = COLOR_GRADE_2;
+        Point3d[] points = new Point3d[]{pp.p1(), pp.p2()};
+        points[0].scale(1000d);
+        points[1].scale(1000d);
+        addPointPair(points[0], points[1], label, color, LINE_RADIUS*1000, POINT_RADIUS*2*1000);
+    }
+    
+     /**
+     * Add a point-pair to the 3d view.
+     * 
+     * Because parameters are decomposed the point-pair can not be imaginary.
+     * 
+     * @param parameters unit in [m]
+     * @param label
+     * @param isIPNS true, if ipns represenation
      */
     public void addPointPair(iCGATangentOrRound.EuclideanParameters parameters, 
                              String label, boolean isIPNS){
         Color color = COLOR_GRADE_3;
         if (!isIPNS) color = COLOR_GRADE_2;
-        boolean isImaginary = false;
-        if (parameters.squaredSize()<0) isImaginary = true;
-        //TODO
-        float radius = 1;
-        float width =1;
         Point3d[] points = decomposePointPair(parameters);
-        addPointPair(points[0], points[1], label, color, radius, width, isImaginary);
-    };
+        points[0].scale(1000d);
+        points[1].scale(1000d);
+        addPointPair(points[0], points[1], label, color, LINE_RADIUS*1000, POINT_RADIUS*2*1000);
+    }
+    
     /**
      * Add a tangent to the 3d view.
      * 
@@ -234,7 +514,7 @@ public class GeometryViewCGA extends GeometryView3d {
         Color color = COLOR_GRADE_3;
         if (!isIPNS) color = COLOR_GRADE_2;
         addArrow(parameters.location(), parameters.attitude(), 
-                TANGENT_LENGTH, LINE_RADIUS, color, label);
+                TANGENT_LENGTH, LINE_RADIUS*1000, color, label);
     }
    
   
@@ -245,6 +525,15 @@ public class GeometryViewCGA extends GeometryView3d {
         if (squaredRadius < 0) r = -r;
         return r;
     }
+   
+    /**
+     * Decompose point-pair into two points.
+     * 
+     * Implementation based on determination of location and squared-size.
+     * 
+     * @param parameters
+     * @return 
+     */
     private static Point3d[] decomposePointPair(iCGATangentOrRound.EuclideanParameters parameters){
         Point3d c = parameters.location();
         double r = Math.sqrt(Math.abs(parameters.squaredSize())); 
@@ -260,9 +549,19 @@ public class GeometryViewCGA extends GeometryView3d {
     }
     
     
-    
+    /**
+     * This method must be invoked outside the EVT, because long running file
+     * loading can be included. It is invoked via AnalysisLauncher.open().
+     * 
+     * @throws Exception 
+     */
     @Override
     public void init() throws Exception {
+        
+        if (SwingUtilities.isEventDispatchThread()){
+            System.out.println("init() invoked inside the EVT!");
+            throw new RuntimeException("GeometryViewCGA.init() is invoked inside the EDT!");
+        } 
         
         Quality q = Quality.Advanced(); 
         q.setDepthActivated(true);
@@ -279,56 +578,62 @@ public class GeometryViewCGA extends GeometryView3d {
         chart.getView().setSquared(false);
         chart.getView().setBackgroundColor(Color.WHITE);
         chart.getView().getAxis().getLayout().setMainColor(Color.BLACK);
+        
+        //Set up ObjectLoader and Mouse
+        colladaLoader = ObjectLoader.getLoader();
+        
         //Add the ChessFloor and set size
+        /*this.setUpChessFloor(100f);
+        chart.getScene().getGraph().addGraphListener(() -> {
+            updateChessFloor(true, CHESS_FLOOR_WIDTH);
+        });*/
         
+        //setUpPickingSupport();
         
-        
-        this.setUpChessFloor(100.f);
-        chart.getScene().getGraph().addGraphListener(new Graph.GraphListener() {
-            @Override
-            public void onMountAll() {
-                updateChessFloor(true);
-            }
-        });
-        
-       
-        setUpMouse();
-        //Light light = chart.addLight(chart.getView().getBounds().getCorners().getXmaxYmaxZmax());
-        //light.setType(Light.Type.POSITIONAL);
-        Light light = chart.addLightOnCamera();
+        //Light light = chart.addLightOnCamera();
         
         //addSkeleton("data/golembones/golembones.obj");
         
-        /**
-        addPoint(new Point3d(1,1,1), Color.BLUE, 0.6f, "Point1");
-        addSphere(new Point3d(20,20,20), 10, Color.ORANGE, "Sphere1");
         
-        addPlane(new Point3d(5d,5d,5d), new Vector3d(0d,0d,5d), new Vector3d(5d,0d,0d), Color.RED, "Plane1");
+        //addPoint(new Point3d(1,1,1), Color.BLUE, 0.6f, "Point1");
+        //addSphere(new Point3d(20,20,20), 10, Color.ORANGE, "Sphere1");
         
-        addArrow(new Point3d(0d, 0d, 0d), new Vector3d(0d,0d,2d), 3f, 0.5f, Color.CYAN, "Arrow1");
+        //addPlane(new Point3d(5d,5d,5d), new Vector3d(0d,0d,5d), new Vector3d(5d,0d,0d), Color.RED, "Plane1");
         
-        addLabel(new Point3d(10d, 10d, 10d), "Label", Color.BLACK);
-        addCircle(new Point3d(20,20,20), new Vector3d(0,0,1),10,Color.RED, "Circle");
+        //addArrow(new Point3d(0d, 0d, 0d), new Vector3d(0d,0d,2d), 3f, 0.5f, Color.CYAN, "Arrow1");
         
-        addLine(new Vector3d(0d,0d,-1d), new Point3d(3d,0d,3d), Color.CYAN, 0.2f, 10, "ClipLinie");
+        //addLabel(new Point3d(10d, 10d, 10d), "Label", Color.BLACK);
+        //addCircle(new Point3d(20,20,20), new Vector3d(0,0,1),10,Color.RED, "Circle");
         
-        addPlane(new Point3d(0,1,5), new Vector3d(0,-10,0), new Vector3d(-10,0,0), Color.ORANGE, "ClipPlane");
-        addPoint(new Point3d(0,0,0), Color.BLUE, 0.6f, "Point1");
-        addPoint(new Point3d(1,10,1), Color.BLUE, 0.6f, "Point3");
-        addPoint(new Point3d(20,20,20), Color.BLUE, 0.6f, "Point2");    
-        addPlane(new Point3d(5d,5d,5d), new Vector3d(0d,0d,5d), new Vector3d(5d,0d,0d), Color.RED, "Plane1");
-        addLine(new Vector3d(0d,0d,-1d), new Point3d(3d,0d,3d), Color.CYAN, 0.2f, 10, "ClipLinie");
-        addArrow(new Point3d(7d, 7d, 7d), new Vector3d(0d,0d,2d), 3f, 0.5f, Color.CYAN, "Arrow1");
-        **/
+        //addLine(new Vector3d(0d,0d,-1d), new Point3d(3d,0d,3d), Color.CYAN, 0.2f, 10, "ClipLinie");
         
-        /*
-        double[] delta_theta_rad = new double[]{0d,0d,0d,0d,0d,0d,0d};
-        //double[] delta_theta_rad = new double[]{0d, -8.27430119976213518e-08, 0.732984551101984239, 5.46919521494736127, 0.0810043775014757245, -3.53724730506321805e-07, -9.97447025669062626e-08};
-        double[] delta_a_m = new double[]{0d, 0, -425, -392.2, 0, 0, 0};
-        double[] delta_d_m = new double[]{0d, 162.5, 0, 0, 133.3, 997, 996};
-        double[] delta_alpha_rad= new double[]{0d, Math.PI/2, 0, 0, Math.PI/2, Math.PI/2, 0};
-        */
+        //addPlane(new Point3d(0,1,5), new Vector3d(0,-10,0), new Vector3d(-10,0,0), Color.ORANGE, "ClipPlane");
+        //addPoint(new Point3d(0,0,0), Color.BLUE, 0.6f, "Point1");
+        //addPoint(new Point3d(1,10,1), Color.BLUE, 0.6f, "Point3");
+        //addPoint(new Point3d(20,20,20), Color.BLUE, 0.6f, "Point2");    
+        //addPlane(new Point3d(5d,5d,5d), new Vector3d(0d,0d,5d), new Vector3d(5d,0d,0d), Color.RED, "Plane1");
+        //addLine(new Vector3d(0d,0d,-1d), new Point3d(3d,0d,3d), Color.CYAN, 0.2f, 10, "ClipLinie");
+        //addArrow(new Point3d(7d, 7d, 7d), new Vector3d(0d,0d,2d), 3f, 0.5f, Color.CYAN, "Arrow1");
+         
+        addGeometricObjects();
         
+        // test
+        
+        
+        double[] delta_theta_rad = new double[]{0d,0d,0d,0d,0d,0d,0d};      
+
+        ArrayList<String> pathList = new ArrayList<>();
+        pathList.add("data/objfiles/base.dae");
+        pathList.add("data/objfiles/shoulder.dae");
+        pathList.add("data/objfiles/upperarm.dae");
+        pathList.add("data/objfiles/forearm.dae");
+        pathList.add("data/objfiles/wrist1.dae");
+        pathList.add("data/objfiles/wrist2.dae");
+        pathList.add("data/objfiles/wrist3.dae");
+        
+        // Unklar, ob dies draw-Aufrufe auslöst und damit Codes in den EDT 
+        // ausgelagert werden müssen
+        addRobotUR5e(pathList, delta_theta_rad);
     }
     
 }
