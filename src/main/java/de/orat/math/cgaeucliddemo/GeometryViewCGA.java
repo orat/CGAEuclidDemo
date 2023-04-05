@@ -50,7 +50,7 @@ public class GeometryViewCGA extends GeometryView3d {
     
     //TODO
     // nur als Faktoren verwenden und skalieren auf Basis des angezeigten Volumens
-    public static float POINT_RADIUS = 0.040f; // in m
+    public static float POINT_RADIUS = 0.01f; // in m
     public static float LINE_RADIUS = 0.01f; // in m
     public static float TANGENT_LENGTH = 0.1f;
    
@@ -61,22 +61,26 @@ public class GeometryViewCGA extends GeometryView3d {
         //Robots have to be rotated after initialisation.
         rotateRobotsCoordsystem();
         setRobotsDH();
-        //gv.setUpRobotMovementUIWithSliders();
         
-        //gv.updateChessFloor(true, CHESS_FLOOR_WIDTH);
-       
+        
         // gv.setUpSkeletons(); 
         EuclidRobot robot = robotList.get(0); // letzter Eintrag aus der Tabelle 
-        robot.setTheta(1, -42.29444839527154F,true); 
-        robot.setTheta(2, -83.92752302017205F,true); 
-        robot.setTheta(3, -95.53404922699703F,true); 
-        robot.setTheta(4, -90.56670900909727F,true); 
-        robot.setTheta(5, 90.21354316792402F,true); 
-        robot.setTheta(6, -132.37747769068068F,true);
+        robot.setTheta(1, 0/*-42.29444839527154F*/,true); 
+        robot.setTheta(2, 0/*-83.92752302017205F*/,true); 
+        robot.setTheta(3, 0/*-95.53404922699703F*/,true); 
+        robot.setTheta(4, 0/*-90.56670900909727F*/,true); 
+        robot.setTheta(5, 0/*90.21354316792402F*/,true); 
+        robot.setTheta(6, 0/*-132.37747769068068F*/,true);
         
+        gv.addGeometricObjects();
+        
+        gv.updateChessFloor(true, CHESS_FLOOR_WIDTH);
+        
+        
+       
     }
     
-    private void addGeometricObjects(/*GeometryViewCGA gv*/){
+    private void addGeometricObjects(){
         
         // test points visualisation
         //Point3d center = new Point3d(1,2,3);
@@ -172,10 +176,14 @@ public class GeometryViewCGA extends GeometryView3d {
         Point3d start = new Point3d(0.3,-0.3,-0.3);
         Vector3d v = new Vector3d(1,1,1);
         CGALineIPNS line = new CGALineIPNS(start, v);
-        boolean result = addCGAObject(line,"line");
+        String label = "line";
+        /*boolean result = addCGAObject(line,"line");
         if (!result){
-            System.out.println("Add line \"line+\" failed!");
-        }
+            // attitude hat falsches Vorzeichen
+            // start point ist auch falsch
+            // add line with c=0.0, 0.0, 0.0 a=-0.5773502691896255, -0.5773502691896255, -0.5773502691896255
+            System.out.println("Add line \""+label+"\" failed!");
+        }*/
         
         //FIXME decompose schlägt fehl
         // unklar, ob das überhaupt ein Punktepaar beschreibt
@@ -229,7 +237,7 @@ public class GeometryViewCGA extends GeometryView3d {
         // plane
         
         //Ebene PI_c:
-        /*values = new double[]{0,         -0.30159779, -0.33004086,  0,          0,          0,
+        values = new double[]{0,         -0.30159779, -0.33004086,  0,          0,          0,
                                 0,          0,          0,          0,          0,          0,
                                 0,          0,          0,          0,          0,          0,
                                 0,          0,          0,          0,          0,          0,
@@ -237,17 +245,20 @@ public class GeometryViewCGA extends GeometryView3d {
                                 0,          0 };  
         CGAPlaneIPNS PI_c = new CGAPlaneIPNS(CGAMultivector.fromGaalop(values));
         System.out.println(PI_c.toString("PI_c"));
-        addCGAObject(PI_c, "PI_c");*/
+        addCGAObject(PI_c, "PI_c");
         
         // test Ebene selbst erzeugt
         // yz-Ebene
-        CGAPlaneIPNS pl = new CGAPlaneIPNS(new Vector3d(1,0,0),0d);
-        System.out.println(pl.toString("pl"));
-        addCGAObject(pl, "pl");
+        // funktioniert
+        //CGAPlaneIPNS pl = new CGAPlaneIPNS(new Vector3d(1,0,0),0d);
+        //System.out.println(pl.toString("pl"));
+        //addCGAObject(pl, "pl");
         
         // funktioniert
         //boolean res = addPlane(new Point3d(0,0,0), new Vector3d(0,0,500), new Vector3d(0,500,500),
         //                  Color.BLUE, "plane");
+        
+        //boolean res = addPlane(new Point3d(0,0,-300), new Vector3d(0,0,1), Color.BLUE, "test_plane");
        }
     
     /**
@@ -423,14 +434,18 @@ public class GeometryViewCGA extends GeometryView3d {
      * @param parameters, unit is [m]
      * @param isIPNS
      * @param label 
-     * @return  
+     * @return true if the line is inside the bounding box and therefore visible
      */
     public boolean addLine(iCGAFlat.EuclideanParameters parameters, String label, boolean isIPNS){
         Color color = COLOR_GRADE_2;
         if (!isIPNS) color = COLOR_GRADE_3;
         Point3d location = parameters.location();
         location.scale(1000d);
-        return addLine(location, parameters.attitude(), color, LINE_RADIUS*1000,  label); 
+        Vector3d a = parameters.attitude();
+        System.out.println("add line with c="+String.valueOf(location.x)+", "+String.valueOf(location.y)+
+                ", "+String.valueOf(location.z)+" a="+String.valueOf(a.x)+", "+String.valueOf(a.y)+", "+
+                String.valueOf(a.z));
+        return addLine(location, a, color, LINE_RADIUS*1000,  label); 
     }
     /**
      * Add a circle to the 3d view.
@@ -615,7 +630,6 @@ public class GeometryViewCGA extends GeometryView3d {
         //addLine(new Vector3d(0d,0d,-1d), new Point3d(3d,0d,3d), Color.CYAN, 0.2f, 10, "ClipLinie");
         //addArrow(new Point3d(7d, 7d, 7d), new Vector3d(0d,0d,2d), 3f, 0.5f, Color.CYAN, "Arrow1");
          
-        addGeometricObjects();
         
         // test
         
@@ -634,6 +648,9 @@ public class GeometryViewCGA extends GeometryView3d {
         // Unklar, ob dies draw-Aufrufe auslöst und damit Codes in den EDT 
         // ausgelagert werden müssen
         addRobotUR5e(pathList, delta_theta_rad);
+        
+        //addGeometricObjects();
+       
     }
     
 }
