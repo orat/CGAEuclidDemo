@@ -51,7 +51,7 @@ public class GeometryViewCGA extends GeometryView3d {
     //TODO
     // nur als Faktoren verwenden und skalieren auf Basis des angezeigten Volumens
     public static float POINT_RADIUS = 0.01f; // in m
-    public static float LINE_RADIUS = 0.01f; // in m
+    public static float LINE_RADIUS = 0.005f; // in m
     public static float TANGENT_LENGTH = 0.1f;
    
     public static void main(String[] args) throws Exception {
@@ -75,9 +75,6 @@ public class GeometryViewCGA extends GeometryView3d {
         gv.addGeometricObjects();
         
         gv.updateChessFloor(true, CHESS_FLOOR_WIDTH);
-        
-        
-       
     }
     
     private void addGeometricObjects(){
@@ -112,6 +109,7 @@ public class GeometryViewCGA extends GeometryView3d {
         System.out.println(p5.toString("p5"));
         addCGAObject(p5, "p5");
         
+        
         // spheres 
         
         // test sphere um P5 visualisation
@@ -138,7 +136,8 @@ public class GeometryViewCGA extends GeometryView3d {
         addCGAObject(so, "so");
         */
         
-        // circle visualisation ok
+        // circle visualisation 
+        // FIXME scheint gekippt im Raum zu stehen
         values = new double[]{0,          0,         0,       0,         0,         0,
                     0,          0,         -0.04229702,  0.24011911,  0, 0.07046005,
                    -0.39999987,  0.06876903, -0.3904,     0.35230035,  0,          0,
@@ -166,29 +165,20 @@ public class GeometryViewCGA extends GeometryView3d {
         addCGAObject(cc,"cc");
         //addCircle(loc, normal, radius, Color.BLUE, "test circle", false);
         
-        // point-pair funktioniert
-        Point3d pp1 = new Point3d(0.3,2,1);
-        Point3d pp2 = new Point3d(0.3,2,0.5);
-        CGAPointPairIPNS pp = (new CGAPointPairOPNS(pp1,pp2)).dual();
+        // point-pair 
+        
+        // funktioniert
+        Point3d pp1 = new Point3d(0.1,0.2,0.2);
+        Point3d pp2 = new Point3d(0.1,0.2,-0.2);
+        CGAPointPairIPNS pp = (new CGAPointPairOPNS(pp1,pp2)).dual(); 
+        addCGAObject(pp,"pp");
         //addPointPair(pp.decomposePoints(), "pp", true, false);
         
-        // test line
-        Point3d start = new Point3d(0.3,-0.3,-0.3);
-        Vector3d v = new Vector3d(1,1,1);
-        CGALineIPNS line = new CGALineIPNS(start, v);
-        String label = "line";
-        /*boolean result = addCGAObject(line,"line");
-        if (!result){
-            // attitude hat falsches Vorzeichen
-            // start point ist auch falsch
-            // add line with c=0.0, 0.0, 0.0 a=-0.5773502691896255, -0.5773502691896255, -0.5773502691896255
-            System.out.println("Add line \""+label+"\" failed!");
-        }*/
+       
         
         //FIXME decompose schlägt fehl
-        // unklar, ob das überhaupt ein Punktepaar beschreibt
         /*
-         * [ 0.          0.          0.          0.          0.          0.
+         * [0.          0.          0.          0.          0.          0.
             0.          0.          0.          0.          0.          0.
             0.          0.          0.          0.          0.          0.
             0.         -0.04229702  0.24011911 -0.0937425   0.07046005 -0.39999987
@@ -219,8 +209,11 @@ public class GeometryViewCGA extends GeometryView3d {
         System.out.println("squaredSize(PP)1="+String.valueOf(r2));
         r2 = PP.squaredSize();
         System.out.println("squaredSize(PP)="+String.valueOf(r2));
-        addCGAObject(PP, "PP");
+        addCGAObject(PP, "PPTest");
        
+        
+        // Points
+        
         // Punkt P_c:
         values = new double[]{ 0.00000000e+00, -3.30040856e-01,  3.01597789e-01,  3.90400000e-01,
             -1.76150176e-01, -1.00000000e+00,  0.00000000e+00,  0.00000000e+00,
@@ -233,6 +226,7 @@ public class GeometryViewCGA extends GeometryView3d {
         CGARoundPointIPNS P_c = new CGARoundPointIPNS(CGAMultivector.fromGaalop(values));
         System.out.println(P_c.toString("P_c"));
         addCGAObject(P_c, "P_c");
+        
         
         // plane
         
@@ -254,12 +248,34 @@ public class GeometryViewCGA extends GeometryView3d {
         //System.out.println(pl.toString("pl"));
         //addCGAObject(pl, "pl");
         
+        // test opns plane
+        /*CGARoundPointIPNS p1 = new CGARoundPointIPNS(new Point3d(0,0,0));
+        CGARoundPointIPNS p2 = new CGARoundPointIPNS(new Point3d(0,0,10));
+        CGARoundPointIPNS p3 = new CGARoundPointIPNS(new Point3d(5,10,10));
+        CGAPlaneOPNS pl = new CGAPlaneOPNS(p1,p2,p3);
+        System.out.println(pl.toString("pl"));
+        addCGAObject(pl, "pl");*/
+        
         // funktioniert
         //boolean res = addPlane(new Point3d(0,0,0), new Vector3d(0,0,500), new Vector3d(0,500,500),
         //                  Color.BLUE, "plane");
         
         //boolean res = addPlane(new Point3d(0,0,-300), new Vector3d(0,0,1), Color.BLUE, "test_plane");
-       }
+        
+        // test line
+        //addLine(new Vector3d(0d,0d,-1d), new Point3d(3d,0d,3d), Color.CYAN, 0.2f, 10, "ClipLinie");
+        Point3d start = new Point3d(300,-300,-300);
+        Vector3d v = new Vector3d(100,100,100);
+        CGALineIPNS line = new CGALineIPNS(start, v);
+        String label = "line";
+        boolean result = addCGAObject(line, label);
+        
+        // funktioniert
+        //CGACircleIPNS _c = new CGACircleIPNS(CGAMultivector.fromGaalop(testCreateGaalopExampleCircle()));
+        //System.out.println(_c.toString("_c"));
+        //addCGAObject(_c, "_c");
+        
+    }
     
     /**
      * Add cga object into the visualization. 
@@ -308,8 +324,10 @@ public class GeometryViewCGA extends GeometryView3d {
                 //FIXME
                 // decomposition schlägt fehl
                 // show imaginary point pairs as circles
+                //CGACircleIPNS circle = new CGACircleIPNS(mn);
                 //addCircle(mn.decomposeTangentOrRound(), label, true);
                 //return true;
+                System.out.println("Visualize imaginary point pair \""+label+"\" failed!");
                 return false;
             // tangent vector
             } else if (r2 == 0){
@@ -319,6 +337,7 @@ public class GeometryViewCGA extends GeometryView3d {
             // real point pair
             } else {
                 addPointPair(((CGAPointPairIPNS) m).decomposePoints(), label, true);
+                System.out.println("Visualize real point pair \""+label+"\"!");
                 return true;
             }
         } else if (m instanceof CGASphereIPNS){
@@ -651,6 +670,34 @@ public class GeometryViewCGA extends GeometryView3d {
         
         //addGeometricObjects();
        
+    }
+    
+    // https://gaalopweb.esa.informatik.tu-darmstadt.de/gaalopweb/res/python/input?sample=threespheres
+    private static double[] testCreateGaalopExampleCircle(){
+        double a1=0; double a2=0; double a3=0;
+        double b1=0; double b2=0.4; double b3=0;
+        double c1=0; double c2=0.45; double c3=0.2;
+        double d14=0.5; double d24=0.4; double d34=0.3;
+        double[] x1 = new double[32];//np.zeros(32)
+	x1[4] = (a1 * a1 + a2 * a2 + a3 * a3) / 2.0;// # ep
+	double[] x2 = new double[32];//np.zeros(32)
+	x2[4] = (b1 * b1 + b2 * b2 + b3 * b3) / 2.0;// # ep
+	double[] S1 = new double[32];//np.zeros(32)
+	S1[4] = x1[4] - (d14 * d14) / 2.0;// # ep
+	double[] S2 = new double[32];//np.zeros(32)
+	S2[4] = x2[4] - (d24 * d24) / 2.0;// # ep
+	double[] c = new double[32];//np.zeros(32)
+	c[6] = a1 * b2 + (-(a2 * b1));// # e1 ^ e2
+	c[7] = a1 * b3 + (-(a3 * b1));// # e1 ^ e3
+	c[8] = a1 * S2[4] + (-(S1[4] * b1)) + -0.5 * (a1 + (-b1));// # e1 ^ ep
+	c[9] = a1 * S2[4] + (-(S1[4] * b1)) + (a1 + (-b1)) / 2.0;// # e1 ^ em
+	c[10] = a2 * b3 + (-(a3 * b2));// # e2 ^ e3;
+	c[11] = a2 * S2[4] + (-(S1[4] * b2)) + -0.5 * (a2 + (-b2));// # e2 ^ ep
+	c[12] = a2 * S2[4] + (-(S1[4] * b2)) + (a2 + (-b2)) / 2.0;// # e2 ^ em
+	c[13] = a3 * S2[4] + (-(S1[4] * b3)) + -0.5 * (a3 + (-b3));// # e3 ^ ep
+	c[14] = a3 * S2[4] + (-(S1[4] * b3)) + (a3 + (-b3)) / 2.0;// # e3 ^ em
+	c[15] = S1[4] + (-S2[4]);// # ep ^ em
+        return c;
     }
     
 }
