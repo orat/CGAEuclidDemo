@@ -264,11 +264,16 @@ public class GeometryViewCGA extends GeometryView3d {
         
         // test line
         //addLine(new Vector3d(0d,0d,-1d), new Point3d(3d,0d,3d), Color.CYAN, 0.2f, 10, "ClipLinie");
-        Point3d start = new Point3d(300,-300,-300);
+        
+        /*Point3d start = new Point3d(300,-300,-300);
         Vector3d v = new Vector3d(100,100,100);
         CGALineIPNS line = new CGALineIPNS(start, v);
         String label = "line";
         boolean result = addCGAObject(line, label);
+        Point3d start2 = new Point3d(300,100,100);
+        CGALineIPNS line2 = new CGALineIPNS(start2, v);
+        String label2 = "line2";
+        result = addCGAObject(line2, label2);*/
         
         // funktioniert
         //CGACircleIPNS _c = new CGACircleIPNS(CGAMultivector.fromGaalop(testCreateGaalopExampleCircle()));
