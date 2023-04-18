@@ -65,19 +65,27 @@ public class GeometryViewCGA extends GeometryView3d {
         
         // gv.setUpSkeletons(); 
         EuclidRobot robot = robotList.get(0); // letzter Eintrag aus der Tabelle 
-        robot.setTheta(1, 0/*-42.29444839527154F*/,true); 
-        robot.setTheta(2, 0/*-83.92752302017205F*/,true); 
-        robot.setTheta(3, 0/*-95.53404922699703F*/,true); 
-        robot.setTheta(4, 0/*-90.56670900909727F*/,true); 
-        robot.setTheta(5, 0/*90.21354316792402F*/,true); 
-        robot.setTheta(6, 0/*-132.37747769068068F*/,true);
+        /*robot.setTheta(1, 0,true); 
+        robot.setTheta(2, 0,true); 
+        robot.setTheta(3, 0,true); 
+        robot.setTheta(4, 0,true); 
+        robot.setTheta(5, 0,true); 
+        robot.setTheta(6, 0,true);*/
+        
+        robot.setTheta(1, -42.29444839527154f,true); 
+        robot.setTheta(2, -83.92752302017205f,true); 
+        robot.setTheta(3, -95.53404922699703f,true); 
+        robot.setTheta(4, -90.56670900909727f,true); 
+        robot.setTheta(5, 90.21354316792402f,true); 
+        robot.setTheta(6, -132.37747769068068f,true);
+        
         
         gv.addGeometricObjects();
         
         gv.updateChessFloor(true, CHESS_FLOOR_WIDTH);
     }
     
-    private void addGeometricObjects(){
+    void addGeometricObjects(){
         
         // test points visualisation
         //Point3d center = new Point3d(1,2,3);
@@ -209,7 +217,7 @@ public class GeometryViewCGA extends GeometryView3d {
         System.out.println("squaredSize(PP)1="+String.valueOf(r2));
         r2 = PP.squaredSize();
         System.out.println("squaredSize(PP)="+String.valueOf(r2));
-        addCGAObject(PP, "PPTest");
+        //addCGAObject(PP, "PPTest");
        
         
         // Points
@@ -248,13 +256,20 @@ public class GeometryViewCGA extends GeometryView3d {
         //System.out.println(pl.toString("pl"));
         //addCGAObject(pl, "pl");
         
-        // test opns plane
+        // test opns plane funktioniert
         /*CGARoundPointIPNS p1 = new CGARoundPointIPNS(new Point3d(0,0,0));
         CGARoundPointIPNS p2 = new CGARoundPointIPNS(new Point3d(0,0,10));
         CGARoundPointIPNS p3 = new CGARoundPointIPNS(new Point3d(5,10,10));
         CGAPlaneOPNS pl = new CGAPlaneOPNS(p1,p2,p3);
         System.out.println(pl.toString("pl"));
         addCGAObject(pl, "pl");*/
+        
+        // opns aus gaalop sollte noch getestet werden
+        /*values = new double[]{};  
+        CGAPlaneOPNS PI_c2 = new CGAPlaneOPNS(CGAMultivector.fromGaalop(values));
+        System.out.println(PI_c2.toString("PI_c2"));
+        addCGAObject(PI_c2, "PI_c2");*/
+        
         
         // funktioniert
         //boolean res = addPlane(new Point3d(0,0,0), new Vector3d(0,0,500), new Vector3d(0,500,500),
@@ -446,7 +461,9 @@ public class GeometryViewCGA extends GeometryView3d {
         if (!isIPNS) color = COLOR_GRADE_4;
         Point3d location = parameters.location();
         location.scale(1000d);
-        return addPlane(location, parameters.attitude(), color, label);
+        Vector3d a = parameters.attitude();
+        System.out.println("plane "+label+" "+String.valueOf(a.x)+", "+String.valueOf(a.y)+", "+String.valueOf(a.z));
+        return addPlane(location, a, color, label);
     }
     
     
