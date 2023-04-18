@@ -5,6 +5,8 @@ import de.orat.math.cga.api.CGACircleOPNS;
 import de.orat.math.cga.api.CGALineIPNS;
 import de.orat.math.cga.api.CGALineOPNS;
 import de.orat.math.cga.api.CGAMultivector;
+import de.orat.math.cga.api.CGAOrientedPointIPNS;
+import de.orat.math.cga.api.CGAOrientedPointOPNS;
 import de.orat.math.cga.api.CGAPlaneIPNS;
 import de.orat.math.cga.api.CGAPlaneOPNS;
 import de.orat.math.cga.api.CGAPointPairIPNS;
@@ -272,10 +274,10 @@ public class GeometryViewCGA extends GeometryView3d {
         
         
         // funktioniert
-        //boolean res = addPlane(new Point3d(0,0,0), new Vector3d(0,0,500), new Vector3d(0,500,500),
+        //boolean res = addPlaneDeprecated(new Point3d(0,0,0), new Vector3d(0,0,500), new Vector3d(0,500,500),
         //                  Color.BLUE, "plane");
         
-        //boolean res = addPlane(new Point3d(0,0,-300), new Vector3d(0,0,1), Color.BLUE, "test_plane");
+        //boolean res = addPlaneDeprecated(new Point3d(0,0,-300), new Vector3d(0,0,1), Color.BLUE, "test_plane");
         
         // test line
         //addLine(new Vector3d(0d,0d,-1d), new Point3d(3d,0d,3d), Color.CYAN, 0.2f, 10, "ClipLinie");
@@ -333,11 +335,11 @@ public class GeometryViewCGA extends GeometryView3d {
             return true;
         } else if (m instanceof CGALineIPNS){
             return addLine(m.decomposeFlat(), label, true);
-        } else if (m instanceof CGAPointPairIPNS){
+		} else if (m instanceof CGAPointPairIPNS cGAPointPairIPNS){
             //addPointPair(m.decomposeTangentOrRound(), label, true);
             // WORKAROUND, obige Methode solle funktioniere. Der Workaround funktioniert aber auch nicht
             //FIXME unklar ob normalize wirklich nötig ist
-            CGAPointPairIPNS mn = ((CGAPointPairIPNS) m).normalize();
+                    CGAPointPairIPNS mn = cGAPointPairIPNS.normalize();
             
             double r2 = mn.squaredSize();
             if (r2 < 0){
@@ -354,9 +356,10 @@ public class GeometryViewCGA extends GeometryView3d {
                 System.out.println("CGA-Object \""+label+"\" is a tangent vector - not yet supported!");
                 return false;
                 
-            // real point pair
+                    // real point pair only?
+                    //FIXME
             } else {
-                addPointPair(((CGAPointPairIPNS) m).decomposePoints(), label, true);
+                        addPointPair(cGAPointPairIPNS.decomposePoints(), label, true);
                 System.out.println("Visualize real point pair \""+label+"\"!");
                 return true;
             }
@@ -364,13 +367,15 @@ public class GeometryViewCGA extends GeometryView3d {
             addSphere(m.decomposeTangentOrRound(), label, true);
             return true;
         } else if (m instanceof CGAPlaneIPNS){
-            return addPlane(m.decomposeFlat(), label, true);
+            return addPlane(m.decomposeFlat(), label, true, true, true);
         } else if (m instanceof CGACircleIPNS){
             addCircle(m.decomposeTangentOrRound(), label, true);
             return true;
+        } else if (m instanceof CGAOrientedPointIPNS){
+            addOrientedPoint(m.decomposeTangentOrRound(), label, true);
+            return true;
         }
         //TODO
-        // oriented-point
         // flat-point
         
         // cga opns objects
@@ -387,15 +392,16 @@ public class GeometryViewCGA extends GeometryView3d {
             addSphere(m.decomposeTangentOrRound(), label, false);
             return true;
         } else if (m instanceof CGAPlaneOPNS){
-            addPlane(m.decomposeFlat(), label, false);
+            addPlane(m.decomposeFlat(), label, false, true, true);
             return true;
         } else if (m instanceof CGACircleOPNS){
             addCircle(m.decomposeTangentOrRound(), label, false);
             return true;
+        } else if (m instanceof CGAOrientedPointOPNS){
+            addOrientedPoint(m.decomposeTangentOrRound(), label, false);
+            return true;
         }
-        
         //TODO
-        // oriented-point
         // flat-point
         
         throw new IllegalArgumentException("\""+m.toString("")+"\" has unknown type!");
@@ -453,17 +459,27 @@ public class GeometryViewCGA extends GeometryView3d {
      * @param parameters unit is [m]
      * @param label
      * @param isIPNS 
+     * @param showPolygon 
+     * @param showNormal 
      * @return true, if the plane is visible in the current bounding box
      */
-    public boolean addPlane(iCGAFlat.EuclideanParameters parameters, String label, 
-                         boolean isIPNS){
+     public boolean addPlane(iCGAFlat.EuclideanParameters parameters, String label, 
+                         boolean isIPNS, boolean showPolygon, boolean showNormal){
         Color color = COLOR_GRADE_1;
         if (!isIPNS) color = COLOR_GRADE_4;
         Point3d location = parameters.location();
         location.scale(1000d);
         Vector3d a = parameters.attitude();
         System.out.println("plane "+label+" "+String.valueOf(a.x)+", "+String.valueOf(a.y)+", "+String.valueOf(a.z));
-        return addPlane(location, a, color, label);
+        boolean result = true;
+        if (showPolygon){
+            result = addPlane(location, a, color, label);
+        }
+        if (result && showNormal){
+            addArrow(location, a, TANGENT_LENGTH, 
+                         LINE_RADIUS*1000, color, label);
+        }
+        return result;
     }
     
     
@@ -483,11 +499,30 @@ public class GeometryViewCGA extends GeometryView3d {
         Point3d location = parameters.location();
         location.scale(1000d);
         Vector3d a = parameters.attitude();
-        System.out.println("add line with c="+String.valueOf(location.x)+", "+String.valueOf(location.y)+
-                ", "+String.valueOf(location.z)+" a="+String.valueOf(a.x)+", "+String.valueOf(a.y)+", "+
-                String.valueOf(a.z));
+		System.out.println("add line \""+label+"\" at ("+String.valueOf(location.x)+", "+String.valueOf(location.y)+
+				", "+String.valueOf(location.z)+") with a=("+String.valueOf(a.x)+", "+String.valueOf(a.y)+", "+
+				String.valueOf(a.z)+")");
         return addLine(location, a, color, LINE_RADIUS*1000,  label); 
     }
+    
+    /**
+     * Add oriented-point visualized as arrow.
+     * 
+     * @param parameters
+     * @param label
+     * @param isIPNS 
+     */
+    public void addOrientedPoint(iCGATangentOrRound.EuclideanParameters parameters, 
+                                                 String label, boolean isIPNS){
+        Color color = COLOR_GRADE_2;
+        if (!isIPNS) color = COLOR_GRADE_3;
+        Point3d location = parameters.location();
+        location.scale(1000d);
+        Vector3d direction = parameters.attitude();
+        addArrow(location, direction, TANGENT_LENGTH, 
+                         LINE_RADIUS*1000, color, label);
+    }
+    
     /**
      * Add a circle to the 3d view.
      * 
@@ -693,33 +728,5 @@ public class GeometryViewCGA extends GeometryView3d {
         //addGeometricObjects();
        
     }
-    
-    // https://gaalopweb.esa.informatik.tu-darmstadt.de/gaalopweb/res/python/input?sample=threespheres
-    private static double[] testCreateGaalopExampleCircle(){
-        double a1=0; double a2=0; double a3=0;
-        double b1=0; double b2=0.4; double b3=0;
-        double c1=0; double c2=0.45; double c3=0.2;
-        double d14=0.5; double d24=0.4; double d34=0.3;
-        double[] x1 = new double[32];//np.zeros(32)
-	x1[4] = (a1 * a1 + a2 * a2 + a3 * a3) / 2.0;// # ep
-	double[] x2 = new double[32];//np.zeros(32)
-	x2[4] = (b1 * b1 + b2 * b2 + b3 * b3) / 2.0;// # ep
-	double[] S1 = new double[32];//np.zeros(32)
-	S1[4] = x1[4] - (d14 * d14) / 2.0;// # ep
-	double[] S2 = new double[32];//np.zeros(32)
-	S2[4] = x2[4] - (d24 * d24) / 2.0;// # ep
-	double[] c = new double[32];//np.zeros(32)
-	c[6] = a1 * b2 + (-(a2 * b1));// # e1 ^ e2
-	c[7] = a1 * b3 + (-(a3 * b1));// # e1 ^ e3
-	c[8] = a1 * S2[4] + (-(S1[4] * b1)) + -0.5 * (a1 + (-b1));// # e1 ^ ep
-	c[9] = a1 * S2[4] + (-(S1[4] * b1)) + (a1 + (-b1)) / 2.0;// # e1 ^ em
-	c[10] = a2 * b3 + (-(a3 * b2));// # e2 ^ e3;
-	c[11] = a2 * S2[4] + (-(S1[4] * b2)) + -0.5 * (a2 + (-b2));// # e2 ^ ep
-	c[12] = a2 * S2[4] + (-(S1[4] * b2)) + (a2 + (-b2)) / 2.0;// # e2 ^ em
-	c[13] = a3 * S2[4] + (-(S1[4] * b3)) + -0.5 * (a3 + (-b3));// # e3 ^ ep
-	c[14] = a3 * S2[4] + (-(S1[4] * b3)) + (a3 + (-b3)) / 2.0;// # e3 ^ em
-	c[15] = S1[4] + (-S2[4]);// # ep ^ em
-        return c;
-    }
-    
+   
 }
