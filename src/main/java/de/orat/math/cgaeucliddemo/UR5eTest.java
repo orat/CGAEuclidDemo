@@ -131,14 +131,14 @@ public class UR5eTest extends GeometryView3d {
                     CGACircleIPNS circleIPNS = new CGACircleIPNS(CGAMultivector.fromGaalop(multivectorComponents));
                     addCGAObject(circleIPNS, multivectorName);
                 }
-                /*case "ppIPNS" -> {
+                case "ppIPNS" -> {
                     CGAPointPairIPNS pointPairIPNS = new CGAPointPairIPNS(CGAMultivector.fromGaalop(multivectorComponents));
                     addCGAObject(pointPairIPNS, multivectorName);
                 }
                 case "ppOPNS" -> {
                     CGAPointPairOPNS pointPairIPNS = new CGAPointPairOPNS(CGAMultivector.fromGaalop(multivectorComponents));
                     addCGAObject(pointPairIPNS, multivectorName);
-                }*/
+                }
                 case "planeIPNS" -> {
                     CGAPlaneIPNS planeIPNS = new CGAPlaneIPNS(CGAMultivector.fromGaalop(multivectorComponents));
                     addCGAObject(planeIPNS, multivectorName);
@@ -423,7 +423,14 @@ public class UR5eTest extends GeometryView3d {
             // real point pair only?
             //FIXME
             } else {
-                addPointPair(cGAPointPairIPNS.decomposePoints(), label, true);
+                //ddPointPair(cGAPointPairIPNS.decomposePoints(), label, true);
+                iCGATangentOrRound.EuclideanParameters parameters = mn.decompose();
+                Point3d loc = parameters.location();
+                System.out.println("pp \""+label+"\" loc=("+String.valueOf(loc.x)+", "+String.valueOf(loc.y)+", "+String.valueOf(loc.z)+
+                        " r2="+String.valueOf(parameters.squaredSize()));
+                
+                addPointPair(parameters, label, true);
+                                                     
                 System.out.println("Visualize real point pair \""+label+"\"!");
                 return true;
             }
@@ -450,7 +457,9 @@ public class UR5eTest extends GeometryView3d {
             addLine(m.decomposeFlat(), label, false);
             return true;
         } else if (m instanceof CGAPointPairOPNS){
-            addPointPair(m.decomposeTangentOrRound(), label, false);
+            iCGATangentOrRound.EuclideanParameters parameters = m.decomposeTangentOrRound();
+            
+            addPointPair(parameters, label, false);
             return true;
         } else if (m instanceof CGASphereOPNS){
             addSphere(m.decomposeTangentOrRound(), label, false);
@@ -536,7 +545,8 @@ public class UR5eTest extends GeometryView3d {
         Point3d location = parameters.location();
         location.scale(1000d);
         Vector3d a = parameters.attitude();
-        System.out.println("plane "+label+" "+String.valueOf(a.x)+", "+String.valueOf(a.y)+", "+String.valueOf(a.z));
+        System.out.println("plane "+label+" a=("+String.valueOf(a.x)+", "+String.valueOf(a.y)+", "+String.valueOf(a.z)+
+                "), o=("+String.valueOf(location.x)+", "+String.valueOf(location.y)+", "+String.valueOf(location.z)+")");
         boolean result = true;
         if (showPolygon){
             result = addPlane(location, a, color, label);
@@ -638,7 +648,7 @@ public class UR5eTest extends GeometryView3d {
             Point3d[] points = new Point3d[]{pp.p1(), pp.p2()};
             points[0].scale(1000d);
             points[1].scale(1000d);
-            addPointPair(points[0], points[1], label, color, LINE_RADIUS*1000, POINT_RADIUS*2*1000);
+            addPointPair(points[0], points[1], label, color, color, LINE_RADIUS*1000, POINT_RADIUS*2*1000);
     }
 
     /**
@@ -652,13 +662,26 @@ public class UR5eTest extends GeometryView3d {
      */
     public void addPointPair(iCGATangentOrRound.EuclideanParameters parameters,
                                                      String label, boolean isIPNS){
+            Point3d l = parameters.location();
+            // attitude ist kaputt (0,0,0)
+            //FIXME
+            Vector3d v = parameters.attitude();
+            // pp(tangendRound) "Q_c" l=(0.22051648556598652, -0.36734504620986796, 0.5895999999978851, v=(0.0, 0.0, 0.0), r2=-0.01631828959909079
+            System.out.println("pp(tangendRound) \""+label+"\" l=("+String.valueOf(l.x)+", "+String.valueOf(l.y)+", "+String.valueOf(l.z)+
+                      ", v=("+String.valueOf(v.x)+", "+String.valueOf(v.y)+", "+String.valueOf(v.z)+
+                    "), r2="+String.valueOf(parameters.squaredSize()));
+            
             Color color = COLOR_GRADE_3;
             if (!isIPNS) color = COLOR_GRADE_2;
             Point3d[] points = decomposePointPair(parameters);
+            System.out.println("pp \""+label+"\" p1=("+String.valueOf(points[0].x)+", "+String.valueOf(points[0].y)+", "+String.valueOf(points[0].z)+
+                        ", p2=("+String.valueOf(points[1].x)+", "+String.valueOf(points[1].y)+", "+String.valueOf(points[1].z)+")");
+               
             points[0].scale(1000d);
             points[1].scale(1000d);
-            addPointPair(points[0], points[1], label, color, LINE_RADIUS*1000, POINT_RADIUS*2*1000);
+            addPointPair(points[0], points[1], label, color, color, LINE_RADIUS*1000, POINT_RADIUS*2*1000);
     }
+          
 
     /**
      * Add a tangent to the 3d view.
@@ -689,8 +712,10 @@ public class UR5eTest extends GeometryView3d {
      *
      * Implementation based on determination of location and squared-size.
      *
+     * FIXME sollte das nicht in CGAPointPair... verschoeben werden?
+     * 
      * @param parameters
-     * @return
+     * @return decomposed points
      */
     private static Point3d[] decomposePointPair(iCGATangentOrRound.EuclideanParameters parameters){
             Point3d c = parameters.location();

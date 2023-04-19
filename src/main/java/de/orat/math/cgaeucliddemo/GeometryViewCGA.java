@@ -180,11 +180,12 @@ public class GeometryViewCGA extends GeometryView3d {
         // funktioniert
         Point3d pp1 = new Point3d(0.1,0.2,0.2);
         Point3d pp2 = new Point3d(0.1,0.2,-0.2);
-        CGAPointPairIPNS pp = (new CGAPointPairOPNS(pp1,pp2)).dual(); 
-        addCGAObject(pp,"pp");
+        //CGAPointPairIPNS pp = (new CGAPointPairOPNS(pp1,pp2)).dual(); 
+        //addCGAObject(pp,"pp");
         //addPointPair(pp.decomposePoints(), "pp", true, false);
         
-       
+        CGAPointPairOPNS pp = (new CGAPointPairOPNS(pp1,pp2)); 
+        addCGAObject(pp,"pp");
         
         //FIXME decompose schlägt fehl
         /*
@@ -335,11 +336,11 @@ public class GeometryViewCGA extends GeometryView3d {
             return true;
         } else if (m instanceof CGALineIPNS){
             return addLine(m.decomposeFlat(), label, true);
-		} else if (m instanceof CGAPointPairIPNS cGAPointPairIPNS){
+	} else if (m instanceof CGAPointPairIPNS cGAPointPairIPNS){
             //addPointPair(m.decomposeTangentOrRound(), label, true);
-            // WORKAROUND, obige Methode solle funktioniere. Der Workaround funktioniert aber auch nicht
+            // WORKAROUND, obige Methode solle funktionieren. Der Workaround funktioniert aber auch nicht
             //FIXME unklar ob normalize wirklich nötig ist
-                    CGAPointPairIPNS mn = cGAPointPairIPNS.normalize();
+            CGAPointPairIPNS mn = cGAPointPairIPNS.normalize();
             
             double r2 = mn.squaredSize();
             if (r2 < 0){
@@ -359,9 +360,14 @@ public class GeometryViewCGA extends GeometryView3d {
                     // real point pair only?
                     //FIXME
             } else {
-                        addPointPair(cGAPointPairIPNS.decomposePoints(), label, true);
-                System.out.println("Visualize real point pair \""+label+"\"!");
-                return true;
+                iCGAPointPair.PointPair pp = cGAPointPairIPNS.decomposePoints();
+                if (isValid(pp.p1()) && isValid(pp.p2())){
+                    addPointPair(pp, label, true);
+                    System.out.println("Visualize real point pair \""+label+"\"!");
+                } else {
+                    System.out.println("Point pair \""+label+"\" does not contain two valid points!");
+                }
+                return false;
             }
         } else if (m instanceof CGASphereIPNS){
             addSphere(m.decomposeTangentOrRound(), label, true);
@@ -566,12 +572,16 @@ public class GeometryViewCGA extends GeometryView3d {
      * @param isIPNS true, if ipns representation
      */
     public void addPointPair(iCGAPointPair.PointPair pp, String label, boolean isIPNS){
+        
+        if (!isValid(pp.p1()) || !isValid(pp.p2())){
+            throw new IllegalArgumentException("addPointPair(): pp does not contain two valid points!");
+        }
         Color color = COLOR_GRADE_3;
         if (!isIPNS) color = COLOR_GRADE_2;
         Point3d[] points = new Point3d[]{pp.p1(), pp.p2()};
         points[0].scale(1000d);
         points[1].scale(1000d);
-        addPointPair(points[0], points[1], label, color, LINE_RADIUS*1000, POINT_RADIUS*2*1000);
+        addPointPair(points[0], points[1], label, color, color, LINE_RADIUS*1000, POINT_RADIUS*2*1000);
     }
     
      /**
@@ -590,7 +600,8 @@ public class GeometryViewCGA extends GeometryView3d {
         Point3d[] points = decomposePointPair(parameters);
         points[0].scale(1000d);
         points[1].scale(1000d);
-        addPointPair(points[0], points[1], label, color, LINE_RADIUS*1000, POINT_RADIUS*2*1000);
+        addPointPair(points[0], points[1], label, color, color, 
+                LINE_RADIUS*1000, POINT_RADIUS*2*1000);
     }
     
     /**
