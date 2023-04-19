@@ -119,18 +119,26 @@ public class UR5eTest extends GeometryView3d {
                     CGARoundPointIPNS point = new CGARoundPointIPNS(CGAMultivector.fromGaalop(multivectorComponents));
                     addCGAObject(point, multivectorName);
                 }
-                /*case "sphereIPNS" -> {
+                case "sphereIPNS" -> {
                     CGASphereIPNS sphereIPNS = new CGASphereIPNS(CGAMultivector.fromGaalop(multivectorComponents));
                     addCGAObject(sphereIPNS, multivectorName);
-                }*/
+                }
+                case "sphereOPNS" -> {
+                    CGASphereOPNS sphereOPNS = new CGASphereOPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                    addCGAObject(sphereOPNS, multivectorName);
+                }
                 case "circleIPNS" -> {
                     CGACircleIPNS circleIPNS = new CGACircleIPNS(CGAMultivector.fromGaalop(multivectorComponents));
                     addCGAObject(circleIPNS, multivectorName);
                 }
-                case "pointPairIPNS" -> {
+                /*case "ppIPNS" -> {
                     CGAPointPairIPNS pointPairIPNS = new CGAPointPairIPNS(CGAMultivector.fromGaalop(multivectorComponents));
                     addCGAObject(pointPairIPNS, multivectorName);
                 }
+                case "ppOPNS" -> {
+                    CGAPointPairOPNS pointPairIPNS = new CGAPointPairOPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                    addCGAObject(pointPairIPNS, multivectorName);
+                }*/
                 case "planeIPNS" -> {
                     CGAPlaneIPNS planeIPNS = new CGAPlaneIPNS(CGAMultivector.fromGaalop(multivectorComponents));
                     addCGAObject(planeIPNS, multivectorName);
@@ -150,12 +158,6 @@ public class UR5eTest extends GeometryView3d {
                 default -> {
                 }
             }
-
-            //TODO
-            /*else if(multivectorType.equals("lineOPNS")){
-            CGALineOPNS lineOPNS = new CGALineOPNS(CGAMultivector.fromGaalop(multivectorComponents));
-            addCGAObject(lineOPNS, multivectorName);
-            }*/
         }
 
         // test points visualisation
@@ -539,10 +541,11 @@ public class UR5eTest extends GeometryView3d {
         if (showPolygon){
             result = addPlane(location, a, color, label);
         }
-        if (result && showNormal){
+        // scheint zum Absturz zu führen
+        /*if (result && showNormal){
             addArrow(location, a, TANGENT_LENGTH, 
                          LINE_RADIUS*1000, color, label);
-        }
+        }*/
         return result;
     }
 
