@@ -2,6 +2,7 @@ package de.orat.math.cgaeucliddemo;
 
 import de.orat.math.cga.api.CGACircleIPNS;
 import de.orat.math.cga.api.CGACircleOPNS;
+import de.orat.math.cga.api.CGAKVector;
 import de.orat.math.cga.api.CGALineIPNS;
 import de.orat.math.cga.api.CGALineOPNS;
 import de.orat.math.cga.api.CGAMultivector;
@@ -141,14 +142,18 @@ public class UR5eTest extends GeometryView3d {
                 }
                 case "planeIPNS" -> {
                     CGAPlaneIPNS planeIPNS = new CGAPlaneIPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                    System.out.println(planeIPNS.toString(multivectorName));
                     addCGAObject(planeIPNS, multivectorName);
                 }
                 case "planeOPNS" -> {
                     CGAPlaneOPNS planeOPNS = new CGAPlaneOPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                    System.out.println("opns-plane: "+planeOPNS.toString(multivectorName));
                     addCGAObject(planeOPNS, multivectorName);
+                    System.out.println("...plane added.");
                 }
                 case "lineIPNS" -> {
                     CGALineIPNS lineIPNS = new CGALineIPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                    System.out.println(lineIPNS.toString(multivectorName));
                     addCGAObject(lineIPNS, multivectorName);
                 }
                 case "lineOPNS" -> {
@@ -380,7 +385,7 @@ public class UR5eTest extends GeometryView3d {
         }
         //TODO
         // CGAMultivector.create() is incomplete
-        addCGAObject(CGAMultivector.create(values, isIPNS), label);
+        addCGAObject(CGAKVector.create(values, isIPNS), label);
     }
 
     /**
@@ -391,14 +396,14 @@ public class UR5eTest extends GeometryView3d {
      * @return
      * @throws IllegalArgumentException if multivector is no visualizable type
      */
-    public boolean addCGAObject(CGAMultivector m, String label){
+    public boolean addCGAObject(CGAKVector m, String label){
 
         // cga ipns objects
         if (m instanceof CGARoundPointIPNS){
             addPoint(m.decomposeTangentOrRound(), label, true);
             return true;
-        } else if (m instanceof CGALineIPNS){
-            return addLine(m.decomposeFlat(), label, true);
+        } else if (m instanceof CGALineIPNS lineIPNS){
+            return addLine(lineIPNS.decomposeFlat(), label, true);
         } else if (m instanceof CGAPointPairIPNS cGAPointPairIPNS){
             //addPointPair(m.decomposeTangentOrRound(), label, true);
             // WORKAROUND, obige Methode solle funktioniere. Der Workaround funktioniert aber auch nicht
@@ -437,8 +442,8 @@ public class UR5eTest extends GeometryView3d {
         } else if (m instanceof CGASphereIPNS){
             addSphere(m.decomposeTangentOrRound(), label, true);
             return true;
-        } else if (m instanceof CGAPlaneIPNS){
-            return addPlane(m.decomposeFlat(), label, true, true, true);
+        } else if (m instanceof CGAPlaneIPNS planeIPNS){
+            return addPlane(planeIPNS.decomposeFlat(), label, true, true, true);
         } else if (m instanceof CGACircleIPNS){
             addCircle(m.decomposeTangentOrRound(), label, true);
             return true;
@@ -453,8 +458,8 @@ public class UR5eTest extends GeometryView3d {
         if (m instanceof CGARoundPointOPNS){
             addPoint(m.decomposeTangentOrRound(), label, false);
             return true;
-        } else if (m instanceof CGALineOPNS){
-            addLine(m.decomposeFlat(), label, false);
+        } else if (m instanceof CGALineOPNS lineOPNS){
+            addLine(lineOPNS.decomposeFlat(), label, false);
             return true;
         } else if (m instanceof CGAPointPairOPNS){
             iCGATangentOrRound.EuclideanParameters parameters = m.decomposeTangentOrRound();
@@ -464,8 +469,8 @@ public class UR5eTest extends GeometryView3d {
         } else if (m instanceof CGASphereOPNS){
             addSphere(m.decomposeTangentOrRound(), label, false);
             return true;
-        } else if (m instanceof CGAPlaneOPNS){
-            addPlane(m.decomposeFlat(), label, false, true, true);
+        } else if (m instanceof CGAPlaneOPNS planeOPNS){
+            addPlane(planeOPNS.decomposeFlat(), label, false, true, true);
             return true;
         } else if (m instanceof CGACircleOPNS){
             addCircle(m.decomposeTangentOrRound(), label, false);

@@ -2,6 +2,7 @@ package de.orat.math.cgaeucliddemo;
 
 import de.orat.math.cga.api.CGACircleIPNS;
 import de.orat.math.cga.api.CGACircleOPNS;
+import de.orat.math.cga.api.CGAKVector;
 import de.orat.math.cga.api.CGALineIPNS;
 import de.orat.math.cga.api.CGALineOPNS;
 import de.orat.math.cga.api.CGAMultivector;
@@ -317,7 +318,7 @@ public class GeometryViewCGA extends GeometryView3d {
         }
         //TODO
         // CGAMultivector.create() is incomplete
-        addCGAObject(CGAMultivector.create(values, isIPNS), label);
+        addCGAObject(CGAKVector.create(values, isIPNS), label);
     }
     
     /**
@@ -328,14 +329,14 @@ public class GeometryViewCGA extends GeometryView3d {
      * @return 
      * @throws IllegalArgumentException if multivector is no visualizable type
      */
-    public boolean addCGAObject(CGAMultivector m, String label){
+    public boolean addCGAObject(CGAKVector m, String label){
         
         // cga ipns objects
         if (m instanceof CGARoundPointIPNS){
             addPoint(m.decomposeTangentOrRound(), label, true);
             return true;
-        } else if (m instanceof CGALineIPNS){
-            return addLine(m.decomposeFlat(), label, true);
+        } else if (m instanceof CGALineIPNS line){
+            return addLine(line.decomposeFlat(), label, true);
 	} else if (m instanceof CGAPointPairIPNS cGAPointPairIPNS){
             //addPointPair(m.decomposeTangentOrRound(), label, true);
             // WORKAROUND, obige Methode solle funktionieren. Der Workaround funktioniert aber auch nicht
@@ -372,8 +373,8 @@ public class GeometryViewCGA extends GeometryView3d {
         } else if (m instanceof CGASphereIPNS){
             addSphere(m.decomposeTangentOrRound(), label, true);
             return true;
-        } else if (m instanceof CGAPlaneIPNS){
-            return addPlane(m.decomposeFlat(), label, true, true, true);
+        } else if (m instanceof CGAPlaneIPNS plane){
+            return addPlane(plane.decomposeFlat(), label, true, true, true);
         } else if (m instanceof CGACircleIPNS){
             addCircle(m.decomposeTangentOrRound(), label, true);
             return true;
@@ -388,8 +389,8 @@ public class GeometryViewCGA extends GeometryView3d {
         if (m instanceof CGARoundPointOPNS){
             addPoint(m.decomposeTangentOrRound(), label, false);
             return true;
-        } else if (m instanceof CGALineOPNS){
-            addLine(m.decomposeFlat(), label, false);
+        } else if (m instanceof CGALineOPNS line){
+            addLine(line.decomposeFlat(), label, false);
             return true;
         } else if (m instanceof CGAPointPairOPNS){
             addPointPair(m.decomposeTangentOrRound(), label, false);
@@ -397,8 +398,8 @@ public class GeometryViewCGA extends GeometryView3d {
         } else if (m instanceof CGASphereOPNS){
             addSphere(m.decomposeTangentOrRound(), label, false);
             return true;
-        } else if (m instanceof CGAPlaneOPNS){
-            addPlane(m.decomposeFlat(), label, false, true, true);
+        } else if (m instanceof CGAPlaneOPNS plane){
+            addPlane(plane.decomposeFlat(), label, false, true, true);
             return true;
         } else if (m instanceof CGACircleOPNS){
             addCircle(m.decomposeTangentOrRound(), label, false);
