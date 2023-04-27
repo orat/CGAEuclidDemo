@@ -299,6 +299,8 @@ public class GeometryViewCGA extends GeometryView3d {
         //System.out.println(_c.toString("_c"));
         //addCGAObject(_c, "_c");
         
+        addArrow(new Point3d(100,0,0), new Vector3d(1,0,0) , 200, 
+                         LINE_RADIUS*2, Color.BLUE, "test array");
     }
     
     /**

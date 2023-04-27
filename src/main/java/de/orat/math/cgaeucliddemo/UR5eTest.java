@@ -19,6 +19,7 @@ import de.orat.math.cga.api.CGASphereOPNS;
 import de.orat.math.cga.api.iCGAFlat;
 import de.orat.math.cga.api.iCGAPointPair;
 import de.orat.math.cga.api.iCGATangentOrRound;
+import static de.orat.math.cgaeucliddemo.GeometryViewCGA.LINE_RADIUS;
 import de.orat.math.view.euclidview3d.GeometryView3d;
 import de.orat.math.view.euclidview3d.ObjectLoader;
 
@@ -61,6 +62,8 @@ public class UR5eTest extends GeometryView3d {
     public static float TANGENT_LENGTH = 0.1f;
 
     public static void main(String[] args) throws Exception {
+        
+        //System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
         //GeometryViewCGA gv = new GeometryViewCGA();
         UR5eTest gv = new UR5eTest();
         AnalysisLauncher.open(gv);
@@ -142,22 +145,22 @@ public class UR5eTest extends GeometryView3d {
                 }
                 case "planeIPNS" -> {
                     CGAPlaneIPNS planeIPNS = new CGAPlaneIPNS(CGAMultivector.fromGaalop(multivectorComponents));
-                    System.out.println(planeIPNS.toString(multivectorName));
+                    System.out.println("ipns-plane: "+planeIPNS.toString(multivectorName));
                     addCGAObject(planeIPNS, multivectorName);
                 }
                 case "planeOPNS" -> {
                     CGAPlaneOPNS planeOPNS = new CGAPlaneOPNS(CGAMultivector.fromGaalop(multivectorComponents));
                     System.out.println("opns-plane: "+planeOPNS.toString(multivectorName));
                     addCGAObject(planeOPNS, multivectorName);
-                    System.out.println("...plane added.");
                 }
                 case "lineIPNS" -> {
                     CGALineIPNS lineIPNS = new CGALineIPNS(CGAMultivector.fromGaalop(multivectorComponents));
-                    System.out.println(lineIPNS.toString(multivectorName));
+                    System.out.println("ipns-line: "+lineIPNS.toString(multivectorName));
                     addCGAObject(lineIPNS, multivectorName);
                 }
                 case "lineOPNS" -> {
                     CGALineOPNS lineOPNS = new CGALineOPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                    System.out.println("opns-line: "+lineOPNS.toString(multivectorName));
                     addCGAObject(lineOPNS, multivectorName);
                 }
                 default -> {
@@ -165,6 +168,9 @@ public class UR5eTest extends GeometryView3d {
             }
         }
 
+        //addArrow(new Point3d(0,0,0), new Vector3d(1,0,0) , 2, 
+        //                 LINE_RADIUS*2, Color.BLUE, "test-array");
+        
         // test points visualisation
         //Point3d center = new Point3d(1,2,3);
         //CGARoundPointIPNS p = new CGARoundPointIPNS(center);

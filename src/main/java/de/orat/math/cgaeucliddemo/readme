@@ -1,0 +1,5 @@
+https://github.com/jzy3d/jzy3d-api/blob/2bc67d0f803d8bf11b1e93a72a34653aa0766bad/jzy3d-core/src/main/java/org/jzy3d/plot3d/rendering/ordering/AbstractOrderingStrategy.java#L29-L39
+
+"Comparison method violates its general contract!"
+   *         on some JVM. Fix with System.setProperty("java.util.Arrays.useLegacyMergeSort",
+   *         "true");
