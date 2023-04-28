@@ -20,6 +20,7 @@ import de.orat.math.cga.api.iCGAFlat;
 import de.orat.math.cga.api.iCGAPointPair;
 import de.orat.math.cga.api.iCGATangentOrRound;
 import de.orat.math.cga.api.iCGATangentOrRound.EuclideanParameters;
+import static de.orat.math.cgaeucliddemo.UR5eTest.TANGENT_LENGTH;
 import de.orat.math.view.euclidview3d.GeometryView3d;
 import de.orat.math.view.euclidview3d.ObjectLoader;
 import java.util.ArrayList;
@@ -299,7 +300,7 @@ public class GeometryViewCGA extends GeometryView3d {
         //System.out.println(_c.toString("_c"));
         //addCGAObject(_c, "_c");
         
-        addArrow(new Point3d(100,0,0), new Vector3d(1,0,0) , 200, 
+        addArrow(new Point3d(100,0,0), new Vector3d(200,0,0), 
                          LINE_RADIUS*2, Color.BLUE, "test array");
     }
     
@@ -420,7 +421,7 @@ public class GeometryViewCGA extends GeometryView3d {
     // grade 1 multivectors
     
     /**
-     * Add a point to the 3d view.
+     * Add dir point to the 3d view.
      * 
      * @param parameters unit is [m]
      * @param isIPNS 
@@ -436,7 +437,7 @@ public class GeometryViewCGA extends GeometryView3d {
         addPoint(location, color, POINT_RADIUS*2*1000, label); 
     }
     /**
-     * Add a sphere to the 3d view.
+     * Add dir sphere to the 3d view.
      * 
      * @param parameters unit is [m]
      * @param label
@@ -463,7 +464,7 @@ public class GeometryViewCGA extends GeometryView3d {
         addSphere(location, radius, color, label);
     }
     /**
-     * Add a plane to the 3d view.
+     * Add dir plane to the 3d view.
      * 
      * @param parameters unit is [m]
      * @param label
@@ -478,15 +479,16 @@ public class GeometryViewCGA extends GeometryView3d {
         if (!isIPNS) color = COLOR_GRADE_4;
         Point3d location = parameters.location();
         location.scale(1000d);
-        Vector3d a = parameters.attitude();
-        System.out.println("plane "+label+" "+String.valueOf(a.x)+", "+String.valueOf(a.y)+", "+String.valueOf(a.z));
+        Vector3d dir = parameters.attitude();
+        System.out.println("plane "+label+" "+String.valueOf(dir.x)+", "+String.valueOf(dir.y)+", "+String.valueOf(dir.z));
         boolean result = true;
         if (showPolygon){
-            result = addPlane(location, a, color, label);
+            result = addPlane(location, dir, color, label);
         }
         if (result && showNormal){
-            addArrow(location, a, TANGENT_LENGTH, 
-                         LINE_RADIUS*1000, color, label);
+            dir.normalize();
+            dir.scale(TANGENT_LENGTH);
+            addArrow(location, dir, LINE_RADIUS*1000, color, label);
         }
         return result;
     }
@@ -495,7 +497,7 @@ public class GeometryViewCGA extends GeometryView3d {
     // grade 2
     
     /**
-     * Add a line to the 3d view.
+     * Add dir line to the 3d view.
      * 
      * @param parameters, unit is [m]
      * @param isIPNS
@@ -527,13 +529,14 @@ public class GeometryViewCGA extends GeometryView3d {
         if (!isIPNS) color = COLOR_GRADE_3;
         Point3d location = parameters.location();
         location.scale(1000d);
-        Vector3d direction = parameters.attitude();
-        addArrow(location, direction, TANGENT_LENGTH, 
-                         LINE_RADIUS*1000, color, label);
+        Vector3d dir = new Vector3d(parameters.attitude());
+        dir.normalize();
+        dir.scale(TANGENT_LENGTH);
+        addArrow(location, dir, LINE_RADIUS*1000, color, label);
     }
     
     /**
-     * Add a circle to the 3d view.
+     * Add dir circle to the 3d view.
      * 
      * @param parameters unit in [m]
      * @param label
@@ -608,7 +611,7 @@ public class GeometryViewCGA extends GeometryView3d {
     }
     
     /**
-     * Add a tangent to the 3d view.
+     * Add dir tangent to the 3d view.
      * 
      * @param parameters
      * @param label 
@@ -618,8 +621,10 @@ public class GeometryViewCGA extends GeometryView3d {
                                  String label, boolean isIPNS){
         Color color = COLOR_GRADE_3;
         if (!isIPNS) color = COLOR_GRADE_2;
-        addArrow(parameters.location(), parameters.attitude(), 
-                TANGENT_LENGTH, LINE_RADIUS*1000, color, label);
+        Vector3d dir = new Vector3d(parameters.attitude());
+        dir.normalize();
+        dir.scale(TANGENT_LENGTH);
+        addArrow(parameters.location(), dir, LINE_RADIUS*1000, color, label);
     }
    
   

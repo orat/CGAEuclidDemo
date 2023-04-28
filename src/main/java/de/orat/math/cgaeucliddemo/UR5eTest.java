@@ -98,78 +98,87 @@ public class UR5eTest extends GeometryView3d {
         robot.getCoordCenters();
 
         gv.addGeometricObjects();
-
         gv.updateChessFloor(true, CHESS_FLOOR_WIDTH);
     }
 
-    void addGeometricObjects() throws IOException {
+    void addGeometricObjectsFromCSVFile(String fileName){
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(fileName));
 
-        BufferedReader reader = new BufferedReader(new FileReader("data/multivectors.csv"));
+            String input;
+            while((input=reader.readLine())!=null){
+                String[] inputArray = input.trim().split(",");
+                String multivectorType = inputArray[0];
+                String multivectorName = inputArray[1];
 
-        String input;
-        while((input=reader.readLine())!=null){
-            String[] inputArray = input.trim().split(",");
-            String multivectorType = inputArray[0];
-            String multivectorName = inputArray[1];
-
-            double[] multivectorComponents = new double[32];
-            for(int i = 2; i <= 33; i++){
-                // multivectorComponents[i-2] = Double.valueOf(inputArray[i]);
+                double[] multivectorComponents = new double[32];
+                for(int i = 2; i <= 33; i++){
+                    // multivectorComponents[i-2] = Double.valueOf(inputArray[i]);
                     multivectorComponents[i-2] = Double.parseDouble(inputArray[i]);
-            }
+                }
 
-            switch (multivectorType) {
-                case "point" -> {
-                    CGARoundPointIPNS point = new CGARoundPointIPNS(CGAMultivector.fromGaalop(multivectorComponents));
-                    addCGAObject(point, multivectorName);
-                }
-                case "sphereIPNS" -> {
-                    CGASphereIPNS sphereIPNS = new CGASphereIPNS(CGAMultivector.fromGaalop(multivectorComponents));
-                    addCGAObject(sphereIPNS, multivectorName);
-                }
-                case "sphereOPNS" -> {
-                    CGASphereOPNS sphereOPNS = new CGASphereOPNS(CGAMultivector.fromGaalop(multivectorComponents));
-                    addCGAObject(sphereOPNS, multivectorName);
-                }
-                case "circleIPNS" -> {
-                    CGACircleIPNS circleIPNS = new CGACircleIPNS(CGAMultivector.fromGaalop(multivectorComponents));
-                    addCGAObject(circleIPNS, multivectorName);
-                }
-                case "ppIPNS" -> {
-                    CGAPointPairIPNS pointPairIPNS = new CGAPointPairIPNS(CGAMultivector.fromGaalop(multivectorComponents));
-                    addCGAObject(pointPairIPNS, multivectorName);
-                }
-                case "ppOPNS" -> {
-                    CGAPointPairOPNS pointPairIPNS = new CGAPointPairOPNS(CGAMultivector.fromGaalop(multivectorComponents));
-                    addCGAObject(pointPairIPNS, multivectorName);
-                }
-                case "planeIPNS" -> {
-                    CGAPlaneIPNS planeIPNS = new CGAPlaneIPNS(CGAMultivector.fromGaalop(multivectorComponents));
-                    System.out.println("ipns-plane: "+planeIPNS.toString(multivectorName));
-                    addCGAObject(planeIPNS, multivectorName);
-                }
-                case "planeOPNS" -> {
-                    CGAPlaneOPNS planeOPNS = new CGAPlaneOPNS(CGAMultivector.fromGaalop(multivectorComponents));
-                    System.out.println("opns-plane: "+planeOPNS.toString(multivectorName));
-                    addCGAObject(planeOPNS, multivectorName);
-                }
-                case "lineIPNS" -> {
-                    CGALineIPNS lineIPNS = new CGALineIPNS(CGAMultivector.fromGaalop(multivectorComponents));
-                    System.out.println("ipns-line: "+lineIPNS.toString(multivectorName));
-                    addCGAObject(lineIPNS, multivectorName);
-                }
-                case "lineOPNS" -> {
-                    CGALineOPNS lineOPNS = new CGALineOPNS(CGAMultivector.fromGaalop(multivectorComponents));
-                    System.out.println("opns-line: "+lineOPNS.toString(multivectorName));
-                    addCGAObject(lineOPNS, multivectorName);
-                }
-                default -> {
+                switch (multivectorType) {
+                    case "point" -> {
+                        CGARoundPointIPNS point = new CGARoundPointIPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                        addCGAObject(point, multivectorName);
+                    }
+                    case "sphereIPNS" -> {
+                        CGASphereIPNS sphereIPNS = new CGASphereIPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                        addCGAObject(sphereIPNS, multivectorName);
+                    }
+                    case "sphereOPNS" -> {
+                        CGASphereOPNS sphereOPNS = new CGASphereOPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                        addCGAObject(sphereOPNS, multivectorName);
+                    }
+                    case "circleIPNS" -> {
+                        CGACircleIPNS circleIPNS = new CGACircleIPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                        addCGAObject(circleIPNS, multivectorName);
+                    }
+                    case "ppIPNS" -> {
+                        CGAPointPairIPNS pointPairIPNS = new CGAPointPairIPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                        addCGAObject(pointPairIPNS, multivectorName);
+                    }
+                    case "ppOPNS" -> {
+                        CGAPointPairOPNS pointPairIPNS = new CGAPointPairOPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                        addCGAObject(pointPairIPNS, multivectorName);
+                    }
+                    case "planeIPNS" -> {
+                        CGAPlaneIPNS planeIPNS = new CGAPlaneIPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                        System.out.println("ipns-plane: "+planeIPNS.toString(multivectorName));
+                        addCGAObject(planeIPNS, multivectorName);
+                    }
+                    case "planeOPNS" -> {
+                        CGAPlaneOPNS planeOPNS = new CGAPlaneOPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                        System.out.println("opns-plane: "+planeOPNS.toString(multivectorName));
+                        addCGAObject(planeOPNS, multivectorName);
+                    }
+                    case "lineIPNS" -> {
+                        CGALineIPNS lineIPNS = new CGALineIPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                        System.out.println("ipns-line: "+lineIPNS.toString(multivectorName));
+                        addCGAObject(lineIPNS, multivectorName);
+                    }
+                    case "lineOPNS" -> {
+                        CGALineOPNS lineOPNS = new CGALineOPNS(CGAMultivector.fromGaalop(multivectorComponents));
+                        System.out.println("opns-line: "+lineOPNS.toString(multivectorName));
+                        addCGAObject(lineOPNS, multivectorName);
+                    }
+                    default -> {
+                    }
                 }
             }
+        } catch (IOException e){
+        
         }
+    }
+    
+    void addGeometricObjects()  {
 
-        //addArrow(new Point3d(0,0,0), new Vector3d(1,0,0) , 2, 
-        //                 LINE_RADIUS*2, Color.BLUE, "test-array");
+        addGeometricObjectsFromCSVFile("data/multivectors.csv");
+
+        Vector3d dir = new Vector3d(1,1,0);
+        dir.scale(200);
+        addArrow(new Point3d(200,0,-50), dir , 
+                         LINE_RADIUS*2*1000, Color.BLUE, "test-array");
         
         // test points visualisation
         //Point3d center = new Point3d(1,2,3);
@@ -249,14 +258,17 @@ public class UR5eTest extends GeometryView3d {
         Point3d loc = parameters.location();
         System.out.println("location= "+String.valueOf(loc.x)+", "+String.valueOf(loc.y)+", "+String.valueOf(loc.z));
 
-
+                */
         // circle ok
         Vector3d normal = new Vector3d(0,0,1);
-        float radius = 2;
+        float radius = 0.5f;
+        Point3d loc = new Point3d(0.0,0.0, -0.3);
         CGACircleIPNS cc = new CGACircleIPNS(loc, normal, radius);
         addCGAObject(cc,"cc");
+        //loc.scale(1000); radius *=1000;
         //addCircle(loc, normal, radius, Color.BLUE, "test circle", false);
 
+        /*
         // point-pair
 
         // funktioniert
@@ -405,8 +417,8 @@ public class UR5eTest extends GeometryView3d {
     public boolean addCGAObject(CGAKVector m, String label){
 
         // cga ipns objects
-        if (m instanceof CGARoundPointIPNS){
-            addPoint(m.decomposeTangentOrRound(), label, true);
+        if (m instanceof CGARoundPointIPNS roundPointIPNS){
+            addPoint(roundPointIPNS.decompose(), label, true);
             return true;
         } else if (m instanceof CGALineIPNS lineIPNS){
             return addLine(lineIPNS.decomposeFlat(), label, true);
@@ -414,15 +426,15 @@ public class UR5eTest extends GeometryView3d {
             //addPointPair(m.decomposeTangentOrRound(), label, true);
             // WORKAROUND, obige Methode solle funktioniere. Der Workaround funktioniert aber auch nicht
             //FIXME unklar ob normalize wirklich nötig ist
-            CGAPointPairIPNS mn = cGAPointPairIPNS.normalize();
+            CGAPointPairIPNS pointPairIPNS = cGAPointPairIPNS.normalize();
 
-            double r2 = mn.squaredSize();
+            double r2 = pointPairIPNS.squaredSize();
             if (r2 < 0){
                 //FIXME
                 // decomposition schlägt fehl
                 // show imaginary point pairs as circles
-                //CGACircleIPNS circle = new CGACircleIPNS(mn);
-                //addCircle(mn.decomposeTangentOrRound(), label, true);
+                //CGACircleIPNS circle = new CGACircleIPNS(pointPairIPNS);
+                //addCircle(pointPairIPNS.decomposeTangentOrRound(), label, true);
                 //return true;
                 System.out.println("Visualize imaginary point pair \""+label+"\" failed!");
                 return false;
@@ -435,7 +447,7 @@ public class UR5eTest extends GeometryView3d {
             //FIXME
             } else {
                 //ddPointPair(cGAPointPairIPNS.decomposePoints(), label, true);
-                iCGATangentOrRound.EuclideanParameters parameters = mn.decompose();
+                iCGATangentOrRound.EuclideanParameters parameters = pointPairIPNS.decompose();
                 Point3d loc = parameters.location();
                 System.out.println("pp \""+label+"\" loc=("+String.valueOf(loc.x)+", "+String.valueOf(loc.y)+", "+String.valueOf(loc.z)+
                         " r2="+String.valueOf(parameters.squaredSize()));
@@ -445,44 +457,44 @@ public class UR5eTest extends GeometryView3d {
                 System.out.println("Visualize real point pair \""+label+"\"!");
                 return true;
             }
-        } else if (m instanceof CGASphereIPNS){
-            addSphere(m.decomposeTangentOrRound(), label, true);
+        } else if (m instanceof CGASphereIPNS sphereIPNS){
+            addSphere(sphereIPNS.decompose(), label, true);
             return true;
         } else if (m instanceof CGAPlaneIPNS planeIPNS){
             return addPlane(planeIPNS.decomposeFlat(), label, true, true, true);
-        } else if (m instanceof CGACircleIPNS){
-            addCircle(m.decomposeTangentOrRound(), label, true);
+        } else if (m instanceof CGACircleIPNS circleIPNS){
+            addCircle(circleIPNS.decompose(), label, true);
             return true;
-        } else if (m instanceof CGAOrientedPointIPNS){
-            addOrientedPoint(m.decomposeTangentOrRound(), label, true);
+        } else if (m instanceof CGAOrientedPointIPNS orientedPointIPNS){
+            addOrientedPoint(orientedPointIPNS.decompose(), label, true);
             return true;
         }
         //TODO
         // flat-point
 
         // cga opns objects
-        if (m instanceof CGARoundPointOPNS){
-            addPoint(m.decomposeTangentOrRound(), label, false);
+        if (m instanceof CGARoundPointOPNS roundPointOPNS){
+            addPoint(roundPointOPNS.decompose(), label, false);
             return true;
         } else if (m instanceof CGALineOPNS lineOPNS){
             addLine(lineOPNS.decomposeFlat(), label, false);
             return true;
-        } else if (m instanceof CGAPointPairOPNS){
-            iCGATangentOrRound.EuclideanParameters parameters = m.decomposeTangentOrRound();
+        } else if (m instanceof CGAPointPairOPNS pointPairOPNS){
+            iCGATangentOrRound.EuclideanParameters parameters = pointPairOPNS.decompose();
             
             addPointPair(parameters, label, false);
             return true;
-        } else if (m instanceof CGASphereOPNS){
-            addSphere(m.decomposeTangentOrRound(), label, false);
+        } else if (m instanceof CGASphereOPNS sphereOPNS){
+            addSphere(sphereOPNS.decompose(), label, false);
             return true;
         } else if (m instanceof CGAPlaneOPNS planeOPNS){
             addPlane(planeOPNS.decomposeFlat(), label, false, true, true);
             return true;
-        } else if (m instanceof CGACircleOPNS){
-            addCircle(m.decomposeTangentOrRound(), label, false);
+        } else if (m instanceof CGACircleOPNS circleOPNS){
+            addCircle(circleOPNS.decompose(), label, false);
             return true;
-        } else if (m instanceof CGAOrientedPointOPNS){
-            addOrientedPoint(m.decomposeTangentOrRound(), label, false);
+        } else if (m instanceof CGAOrientedPointOPNS orientedPointOPNS){
+            addOrientedPoint(orientedPointOPNS.decompose(), label, false);
             return true;
         }
         //TODO
@@ -607,7 +619,11 @@ public class UR5eTest extends GeometryView3d {
        Point3d location = parameters.location();
        location.scale(1000d);
        Vector3d direction = parameters.attitude();
-       addArrow(location, direction, TANGENT_LENGTH, 
+       //FIXME soll die length von direction der length der attitude, also dem weight
+       // des cga-Objekts entsprechen?
+       direction.normalize();
+       direction.scale(TANGENT_LENGTH);
+       addArrow(location, direction, 
                         LINE_RADIUS*1000, color, label);
     }
 
@@ -622,21 +638,23 @@ public class UR5eTest extends GeometryView3d {
                                               String label, boolean isIPNS){
         Color color = COLOR_GRADE_2;
         if (!isIPNS) color = COLOR_GRADE_3;
+        //color = Color.BLUE; //FIXME test only
         boolean isImaginary = false;
         double r2 = parameters.squaredSize();
         if (r2 <0) {
                 isImaginary = true;
+                System.out.println("Circle \""+label+"\" is imaginary!");
                 r2 = -r2;
         }
-        r2*=1000000d;
+        r2 = r2*1000*1000d;
         Point3d location = parameters.location();
         location.scale(1000d);
         Vector3d direction = parameters.attitude();
-        System.out.println("Add circle \""+label+"\" at ("+String.valueOf(location.x)+"mm,"+
+        System.out.println("Add circle1 \""+label+"\" at ("+String.valueOf(location.x)+"mm,"+
                         String.valueOf(location.y)+"mm, "+String.valueOf(location.z)+"mm) with radius "+
-                        String.valueOf(Math.sqrt(r2)+
-                                        "\"[mm] and n= ("+String.valueOf(direction.x)+","+
-                                        String.valueOf(direction.y)+", "+String.valueOf(direction.z)+")!"));
+                        String.valueOf(Math.sqrt(r2)+"\"[mm] and n= ("+String.valueOf(direction.x)+","+
+                        String.valueOf(direction.y)+", "+String.valueOf(direction.z)+") and r="+
+                        String.valueOf(Math.sqrt(r2))+"!"));
         addCircle(location, direction,
                         (float) Math.sqrt(r2), color, label, isImaginary);
     }
@@ -705,8 +723,11 @@ public class UR5eTest extends GeometryView3d {
                                                              String label, boolean isIPNS){
             Color color = COLOR_GRADE_3;
             if (!isIPNS) color = COLOR_GRADE_2;
-            addArrow(parameters.location(), parameters.attitude(),
-                            TANGENT_LENGTH, LINE_RADIUS*1000, color, label);
+            Vector3d dir = new Vector3d(parameters.attitude());
+            dir.normalize();
+            dir.scale(TANGENT_LENGTH);
+            addArrow(parameters.location(), dir,
+                            LINE_RADIUS*1000, color, label);
     }
 
 
