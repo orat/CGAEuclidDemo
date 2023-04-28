@@ -19,6 +19,7 @@ import de.orat.math.cga.api.CGASphereOPNS;
 import de.orat.math.cga.api.iCGAFlat;
 import de.orat.math.cga.api.iCGAPointPair;
 import de.orat.math.cga.api.iCGATangentOrRound;
+import de.orat.math.cga.api.iCGATangentOrRound.EuclideanParameters;
 import static de.orat.math.cgaeucliddemo.GeometryViewCGA.LINE_RADIUS;
 import de.orat.math.view.euclidview3d.GeometryView3d;
 import de.orat.math.view.euclidview3d.ObjectLoader;
@@ -175,10 +176,10 @@ public class UR5eTest extends GeometryView3d {
 
         addGeometricObjectsFromCSVFile("data/multivectors.csv");
 
-        Vector3d dir = new Vector3d(1,1,0);
-        dir.scale(200);
-        addArrow(new Point3d(200,0,-50), dir , 
-                         LINE_RADIUS*2*1000, Color.BLUE, "test-array");
+        //Vector3d dir = new Vector3d(1,1,0);
+        //dir.scale(200);
+        //addArrow(new Point3d(200,0,-50), dir , 
+        //                 LINE_RADIUS*2*1000, Color.BLUE, "test-array");
         
         // test points visualisation
         //Point3d center = new Point3d(1,2,3);
@@ -259,16 +260,19 @@ public class UR5eTest extends GeometryView3d {
         System.out.println("location= "+String.valueOf(loc.x)+", "+String.valueOf(loc.y)+", "+String.valueOf(loc.z));
 
                 */
-        // circle ok
-        Vector3d normal = new Vector3d(0,0,1);
-        float radius = 0.5f;
-        Point3d loc = new Point3d(0.0,0.0, -0.3);
+        
+        // circle funktioniert test in x,y und z-Richtung den Normalenvektor des Kreises
+        /*Vector3d normal = new Vector3d(0,0,1);
+        float radius = 0.3f;
+        Point3d loc = new Point3d(0.1,-0.2, 0.1);
         CGACircleIPNS cc = new CGACircleIPNS(loc, normal, radius);
-        addCGAObject(cc,"cc");
+        addCGAObject(cc,"cc-test");*/
+        
+        // circle ok
         //loc.scale(1000); radius *=1000;
         //addCircle(loc, normal, radius, Color.BLUE, "test circle", false);
 
-        /*
+      
         // point-pair
 
         // funktioniert
@@ -370,12 +374,12 @@ public class UR5eTest extends GeometryView3d {
                 //addLine(new Vector3d(0d,0d,-1d), new Point3d(3d,0d,3d), Color.CYAN, 0.2f, 10, "ClipLinie");
 
         /*Point3d start = new Point3d(300,-300,-300);
-        Vector3d v = new Vector3d(100,100,100);
-        CGALineIPNS line = new CGALineIPNS(start, v);
+        Vector3d att = new Vector3d(100,100,100);
+        CGALineIPNS line = new CGALineIPNS(start, att);
         String label = "line";
         boolean result = addCGAObject(line, label);
         Point3d start2 = new Point3d(300,100,100);
-        CGALineIPNS line2 = new CGALineIPNS(start2, v);
+        CGALineIPNS line2 = new CGALineIPNS(start2, att);
         String label2 = "line2";
         result = addCGAObject(line2, label2);*/
 
@@ -422,13 +426,15 @@ public class UR5eTest extends GeometryView3d {
             return true;
         } else if (m instanceof CGALineIPNS lineIPNS){
             return addLine(lineIPNS.decomposeFlat(), label, true);
-        } else if (m instanceof CGAPointPairIPNS cGAPointPairIPNS){
+        } else if (m instanceof CGAPointPairIPNS pointPairIPNS){
             //addPointPair(m.decomposeTangentOrRound(), label, true);
             // WORKAROUND, obige Methode solle funktioniere. Der Workaround funktioniert aber auch nicht
             //FIXME unklar ob normalize wirklich nötig ist
-            CGAPointPairIPNS pointPairIPNS = cGAPointPairIPNS.normalize();
+            //CGAPointPairIPNS pointPairIPNS = cGAPointPairIPNS.normalize();
 
-            double r2 = pointPairIPNS.squaredSize();
+            EuclideanParameters parameters = pointPairIPNS.decompose();
+            double r2 = parameters.squaredSize();
+            //double r2 = pointPairIPNS.squaredSize();
             if (r2 < 0){
                 //FIXME
                 // decomposition schlägt fehl
@@ -447,7 +453,7 @@ public class UR5eTest extends GeometryView3d {
             //FIXME
             } else {
                 //ddPointPair(cGAPointPairIPNS.decomposePoints(), label, true);
-                iCGATangentOrRound.EuclideanParameters parameters = pointPairIPNS.decompose();
+                //iCGATangentOrRound.EuclideanParameters parameters = pointPairIPNS.decompose();
                 Point3d loc = parameters.location();
                 System.out.println("pp \""+label+"\" loc=("+String.valueOf(loc.x)+", "+String.valueOf(loc.y)+", "+String.valueOf(loc.z)+
                         " r2="+String.valueOf(parameters.squaredSize()));
@@ -646,17 +652,17 @@ public class UR5eTest extends GeometryView3d {
                 System.out.println("Circle \""+label+"\" is imaginary!");
                 r2 = -r2;
         }
-        r2 = r2*1000*1000d;
+        double r = Math.sqrt(r2)*1000;
         Point3d location = parameters.location();
         location.scale(1000d);
         Vector3d direction = parameters.attitude();
+        direction.normalize();
         System.out.println("Add circle1 \""+label+"\" at ("+String.valueOf(location.x)+"mm,"+
                         String.valueOf(location.y)+"mm, "+String.valueOf(location.z)+"mm) with radius "+
-                        String.valueOf(Math.sqrt(r2)+"\"[mm] and n= ("+String.valueOf(direction.x)+","+
-                        String.valueOf(direction.y)+", "+String.valueOf(direction.z)+") and r="+
-                        String.valueOf(Math.sqrt(r2))+"!"));
+                        String.valueOf(r)+"\"[mm] and n= ("+String.valueOf(direction.x)+","+
+                        String.valueOf(direction.y)+", "+String.valueOf(direction.z)+") ");
         addCircle(location, direction,
-                        (float) Math.sqrt(r2), color, label, isImaginary);
+                        (float) r, color, label, isImaginary);
     }
 
 
@@ -694,10 +700,10 @@ public class UR5eTest extends GeometryView3d {
             Point3d l = parameters.location();
             // attitude ist kaputt (0,0,0)
             //FIXME
-            Vector3d v = parameters.attitude();
-            // pp(tangendRound) "Q_c" l=(0.22051648556598652, -0.36734504620986796, 0.5895999999978851, v=(0.0, 0.0, 0.0), r2=-0.01631828959909079
-            System.out.println("pp(tangendRound) \""+label+"\" l=("+String.valueOf(l.x)+", "+String.valueOf(l.y)+", "+String.valueOf(l.z)+
-                      ", v=("+String.valueOf(v.x)+", "+String.valueOf(v.y)+", "+String.valueOf(v.z)+
+            Vector3d att = parameters.attitude();
+            // pp(tangendRound) "Q_c" l=(0.22051648556598652, -0.36734504620986796, 0.5895999999978851, att=(0.0, 0.0, 0.0), r2=-0.01631828959909079
+            System.out.println("pp(tangendRound) \""+label+"\" loc=("+String.valueOf(l.x)+", "+String.valueOf(l.y)+", "+String.valueOf(l.z)+
+                      ", att=("+String.valueOf(att.x)+", "+String.valueOf(att.y)+", "+String.valueOf(att.z)+
                     "), r2="+String.valueOf(parameters.squaredSize()));
             
             Color color = COLOR_GRADE_3;
@@ -754,11 +760,11 @@ public class UR5eTest extends GeometryView3d {
             double r = Math.sqrt(Math.abs(parameters.squaredSize()));
             Vector3d v = parameters.attitude();
             v.normalize();
-            v.scale(r/2);
+            v.scale(r/2); //FIXME ist hier 1/2 wirklich richtig?
             Point3d[] result = new Point3d[2];
             result[0] = new Point3d(c);
             result[0].add(v);
-            result[1] = new Point3d();
+            result[1] = new Point3d(c);
             result[1].sub(v);
             return result;
     }

@@ -6,16 +6,9 @@ import de.orat.math.cga.api.CGAMultivector;
 import de.orat.math.cga.api.CGARotor;
 import de.orat.math.cga.api.CGATangentVectorIPNS;
 import de.orat.math.cga.api.CGATangentVectorOPNS;
-import de.orat.math.view.euclidview3d.ObjectLoader;
-import java.util.ArrayList;
 import org.jogamp.vecmath.Point3d;
 import org.jogamp.vecmath.Tuple3d;
 import org.jogamp.vecmath.Vector3d;
-import org.jzy3d.chart.Chart;
-import org.jzy3d.colors.Color;
-import org.jzy3d.plot3d.rendering.canvas.Quality;
-import org.jzy3d.plot3d.rendering.lights.Light;
-import org.jzy3d.plot3d.rendering.scene.Graph;
 
 /**
   * @author Oliver Rettig (Oliver.Rettig@orat.de)
