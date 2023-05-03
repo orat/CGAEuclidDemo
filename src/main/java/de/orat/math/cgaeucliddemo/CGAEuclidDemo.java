@@ -1,6 +1,5 @@
 package de.orat.math.cgaeucliddemo;
 
-import de.orat.math.cga.api.CGAAttitudeVectorOPNS;
 import de.orat.math.cga.api.CGABivector;
 import de.orat.math.cga.api.CGAMultivector;
 import de.orat.math.cga.api.CGARotor;

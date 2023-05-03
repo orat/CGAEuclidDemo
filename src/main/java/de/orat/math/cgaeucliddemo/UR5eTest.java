@@ -73,7 +73,6 @@ public class UR5eTest extends GeometryView3d {
         rotateRobotsCoordsystem();
         setRobotsDH();
 
-        // gv.setUpSkeletons();
         EuclidRobot robot = robotList.get(0); // letzter Eintrag aus der Tabelle
         robot.setTheta(1, -42.29444839527154F,true);
         robot.setTheta(2, -83.92752302017205F,true);
@@ -81,6 +80,10 @@ public class UR5eTest extends GeometryView3d {
         robot.setTheta(4, -90.56670900909727F,true);
         robot.setTheta(5, 90.21354316792402F,true);
         robot.setTheta(6, -132.37747769068068F,true);
+        
+        
+        
+        
 
         /*robot.setTheta(1, -47.57832154538513F, true);
         robot.setTheta(2, -165.80600889308042F, true);
@@ -262,11 +265,11 @@ public class UR5eTest extends GeometryView3d {
                 */
         
         // circle funktioniert test in x,y und z-Richtung den Normalenvektor des Kreises
-        /*Vector3d normal = new Vector3d(0,0,1);
+        Vector3d normal = new Vector3d(1,1,1);
         float radius = 0.3f;
         Point3d loc = new Point3d(0.1,-0.2, 0.1);
         CGACircleIPNS cc = new CGACircleIPNS(loc, normal, radius);
-        addCGAObject(cc,"cc-test");*/
+        addCGAObject(cc,"cc-test");
         
         // circle ok
         //loc.scale(1000); radius *=1000;
@@ -277,7 +280,7 @@ public class UR5eTest extends GeometryView3d {
 
         // funktioniert
         Point3d pp1 = new Point3d(0.1,0.2,0.2);
-        Point3d pp2 = new Point3d(0.1,0.2,-0.2);
+        Point3d pp2 = new Point3d(0.2,0.1,-0.2);
         CGAPointPairIPNS pp = (new CGAPointPairOPNS(pp1,pp2)).dual();
         addCGAObject(pp,"pp");
         //addPointPair(pp.decomposePoints(), "pp", true, false);
@@ -648,10 +651,11 @@ public class UR5eTest extends GeometryView3d {
         boolean isImaginary = false;
         double r2 = parameters.squaredSize();
         if (r2 <0) {
-                isImaginary = true;
-                System.out.println("Circle \""+label+"\" is imaginary!");
-                r2 = -r2;
+            isImaginary = true;
+            System.out.println("Circle \""+label+"\" is imaginary!");
+            r2 = -r2;
         }
+        //signedRadius(parameters.squaredSize());
         double r = Math.sqrt(r2)*1000;
         Point3d location = parameters.location();
         location.scale(1000d);
@@ -698,10 +702,8 @@ public class UR5eTest extends GeometryView3d {
     public void addPointPair(iCGATangentOrRound.EuclideanParameters parameters,
                                                      String label, boolean isIPNS){
             Point3d l = parameters.location();
-            // attitude ist kaputt (0,0,0)
-            //FIXME
             Vector3d att = parameters.attitude();
-            // pp(tangendRound) "Q_c" l=(0.22051648556598652, -0.36734504620986796, 0.5895999999978851, att=(0.0, 0.0, 0.0), r2=-0.01631828959909079
+            //pp(tangendRound) "pp" loc=(0.10000000000000002, 0.20000000000000004, 0.0, att=(0.0, 0.0, 1.0), r2=0.03999999999999998
             System.out.println("pp(tangendRound) \""+label+"\" loc=("+String.valueOf(l.x)+", "+String.valueOf(l.y)+", "+String.valueOf(l.z)+
                       ", att=("+String.valueOf(att.x)+", "+String.valueOf(att.y)+", "+String.valueOf(att.z)+
                     "), r2="+String.valueOf(parameters.squaredSize()));
@@ -740,9 +742,9 @@ public class UR5eTest extends GeometryView3d {
     // helper methods
 
     private static double signedRadius(double squaredRadius){
-            double r = Math.sqrt(Math.abs(squaredRadius));
-            if (squaredRadius < 0) r = -r;
-            return r;
+        double r = Math.sqrt(Math.abs(squaredRadius));
+        if (squaredRadius < 0) r = -r;
+        return r;
     }
 
     /**
@@ -750,7 +752,8 @@ public class UR5eTest extends GeometryView3d {
      *
      * Implementation based on determination of location and squared-size.
      *
-     * FIXME sollte das nicht in CGAPointPair... verschoeben werden?
+     * TODO sollte das nicht in CGAPointPair... verschoeben werden?
+     * Nein, ich brauche das ja ausserhalb der CGAAPI, aber wohin dann damit?
      * 
      * @param parameters
      * @return decomposed points
